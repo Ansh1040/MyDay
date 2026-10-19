@@ -1,0 +1,214 @@
+/* Create tab: Field Notes, Remix Studio, Experience Builder, Capsules. Theme tokens only.
+   Glass rules (docs/GLASS.md): every text sits on a panel (.glass/.card/.list/.banner/.large-title) or a local
+   .on-art backing; nested items use --glass-inner (no second blur); fields on panels use --glass-strong;
+   key controls and active states get the Liquid Glass highlight. */
+
+/* ---- shared bits ---- */
+.cr-status { display: inline-flex; align-items: center; gap: 5px; font-size: 0.8rem; font-weight: 600; color: var(--ink-3); }
+.cr-status.error { color: color-mix(in srgb, var(--danger) 78%, var(--ink)); }
+.large-title .cr-status { color: var(--ink-2); }
+/* Errors lean slightly toward the ink colour so they keep their contrast on light glass over warm artwork. */
+.cr-err { color: color-mix(in srgb, var(--danger) 78%, var(--ink)); font-weight: 600; }
+.cr-accent { color: var(--accent-text); }
+.cr-danger-icon { color: var(--danger) !important; }
+.cr-danger-text { color: var(--danger); }
+.cr-blur { filter: blur(6px); user-select: none; -webkit-user-select: none; }
+.cr-clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.cr-row-btn { background: none; border: 0; padding: 0; text-align: left; color: inherit; font: inherit; min-height: 44px; }
+.cr-field-label { font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+.cr-check { width: 22px; height: 22px; accent-color: var(--accent); flex-shrink: 0; margin: 0; cursor: pointer; }
+/* A 44px hit area around a small native radio/checkbox. */
+.cr-hit { width: 44px; height: 44px; display: grid; place-items: center; flex-shrink: 0; margin: 0 -4px; cursor: pointer; border-radius: var(--radius-ctl); }
+
+.input[aria-invalid='true'], .textarea[aria-invalid='true'], .select[aria-invalid='true'] { border-color: var(--danger); }
+.input[aria-invalid='true']:focus, .textarea[aria-invalid='true']:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+
+/* Short/one-line captions that sit on the artwork: a multi-line friendly variant of .on-art. */
+.on-art.cr-caption { display: inline-block; border-radius: var(--radius-ctl); padding: 6px 12px; line-height: 1.45; color: var(--ink-2); max-width: 100%; }
+.on-art.cr-art-label { color: var(--ink-2); }
+.on-art.cr-caption.cr-err { color: color-mix(in srgb, var(--danger) 78%, var(--ink)); }
+
+/* A glass panel holding form fields. Fields here get the stronger frost so typing stays readable;
+   the panel already blurs, so the fields don't blur again. */
+.cr-form :is(.input, .textarea, .select) {
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%), var(--glass-strong);
+  border-color: var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.cr-form :is(.input, .textarea, .select):focus { border-color: var(--accent); box-shadow: inset 0 1px 0 var(--glass-edge), 0 0 0 3px var(--accent-soft); }
+.cr-form :is(.input, .textarea)[aria-invalid='true'] { border-color: var(--danger); }
+.cr-form :is(.input, .textarea)[aria-invalid='true']:focus { box-shadow: inset 0 1px 0 var(--glass-edge), 0 0 0 3px color-mix(in srgb, var(--danger) 18%, transparent); }
+/* Text-dense form/editor panels get a little local frost (between --glass-fill and --glass-strong). */
+.card:is(.cr-form, .cr-sketch, .cr-rec) {
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%), color-mix(in srgb, var(--glass-fill) 45%, var(--glass-strong));
+}
+.card .card:is(.cr-form, .cr-sketch, .cr-rec) { background: var(--glass-inner); }
+/* Scrolling chip rows inside a panel bleed to the panel's edges instead of the page's. */
+.cr-form .chips.scroll { margin: 0 -18px; padding: 2px 18px; scroll-padding-inline: 18px; }
+/* Touch targets: chips (incl. linked-item chips from LinkedRefs) are at least 44px tall here. */
+.cr-chips .chip, .cr-form .chip { min-height: 44px; }
+.cr-form .chip > button:not(.icon-btn) { min-height: 42px; }
+.cr-form .chip > .icon-btn { width: 40px !important; height: 40px !important; margin-right: -2px; }
+
+/* Key buttons that sit directly on the artwork (ghost/danger variants have no fill of their own). */
+.btn.cr-solo {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat));
+  backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat));
+}
+.btn.ghost.cr-solo { color: var(--ink); }
+.btn.danger.cr-solo { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 45%, var(--glass-border)); }
+
+/* ---- tile rows (quick capture, capsule kinds): one glass panel, liquid tiles inside (no second blur) ---- */
+.cr-capture, .cr-kind-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 6px; border-radius: var(--radius-card); }
+.cr-capture { margin-top: 4px; }
+@media (max-width: 420px) { .cr-kind-grid { grid-template-columns: repeat(3, 1fr); } }
+.cr-tile {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  min-height: 72px; padding: 10px 4px; border-radius: var(--radius-ctl); text-align: center;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-inner);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo);
+  color: var(--ink); font-size: 0.78rem; font-weight: 650;
+  transition: transform .12s ease, filter .15s ease;
+}
+.cr-tile svg { color: var(--accent-text); }
+.cr-tile:active { transform: scale(.96); }
+
+/* ---- note rows ---- */
+.cr-note { display: flex; align-items: center; gap: 2px; border-radius: var(--radius-card); padding-right: 4px; }
+.cr-note-main {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 14px 6px 14px 14px; min-height: 64px;
+  background: none; border: 0; text-align: left; color: inherit; font: inherit; border-radius: var(--radius-card);
+}
+.cr-note-kind { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); flex-shrink: 0; border: 1px solid var(--glass-border); }
+.cr-note-title { display: block; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-note-snippet { display: block; font-size: 0.86rem; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 1px; }
+.cr-note-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 4px; font-size: 0.75rem; color: var(--ink-2); }
+.cr-thumb { width: 52px; height: 52px; border-radius: 10px; object-fit: cover; background: var(--glass-solid); border: 1px solid var(--glass-border); flex-shrink: 0; }
+
+/* ---- note editor ---- */
+.cr-head { margin-top: 8px; }
+.cr-title-input {
+  width: 100%; margin-top: 10px; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; color: var(--ink); font-size: 1.75rem; outline: none; border-radius: 0; min-height: 48px;
+}
+.cr-title-input::placeholder { color: var(--ink-3); }
+.cr-title-input:focus { border-bottom-color: var(--accent); }
+.cr-title-input:focus-visible { box-shadow: 0 2px 0 var(--accent); }
+/* The drawing surface is near-opaque so strokes stay visible over any artwork. */
+.cr-sketch .fx-sketch-surface { background: var(--glass-solid); border-color: var(--glass-border); box-shadow: inset 0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent); }
+.cr-sketch .fx-swatches { background: var(--glass-inner); border: 1px solid var(--glass-border); }
+.cr-sketch .fx-swatch.on { background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-strong); box-shadow: inset 0 1px 1px var(--liquid-hi); }
+.cr-photo { margin: 0; border-radius: var(--radius-ctl); overflow: hidden; background: var(--glass-inner); border: 1px solid var(--glass-border); }
+.cr-photo img { width: 100%; max-height: 60dvh; object-fit: contain; }
+
+/* ---- voice recorder ---- */
+.cr-rec-btn {
+  width: 60px; height: 60px; border-radius: 50%; flex-shrink: 0; display: grid; place-items: center;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-strong);
+  border: 1px solid var(--glass-border); color: var(--danger);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo), var(--glass-shadow);
+  transition: transform .12s ease;
+}
+.cr-rec-btn:active { transform: scale(.94); }
+.cr-rec-btn:disabled { opacity: .5; }
+.cr-rec-btn.stop { color: var(--ink); border-color: var(--danger); box-shadow: inset 0 1px 1px var(--liquid-hi), 0 0 0 3px color-mix(in srgb, var(--danger) 22%, transparent); }
+.cr-rec-time { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cr-rec-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--danger); animation: cr-pulse 1.2s ease-in-out infinite; }
+.cr-audio { width: 100%; height: 44px; }
+@keyframes cr-pulse { 50% { opacity: .25; } }
+
+/* ---- Create tab cards ---- */
+.cr-feature h2 { color: var(--bg); }
+.cr-empty-card { display: flex; gap: 14px; align-items: flex-start; }
+.cr-capsule-glyph { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-inner); border: 1px solid var(--glass-border); color: var(--ink-2); flex-shrink: 0; }
+.cr-ready { display: block; width: 100%; text-align: left; color: var(--ink); font: inherit; }
+
+/* ---- Builder ---- */
+.cr-type-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media (min-width: 560px) { .cr-type-grid { grid-template-columns: repeat(3, 1fr); } }
+.cr-type {
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 10px 12px; text-align: left;
+  border-radius: var(--radius-ctl); border: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-inner);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+  color: var(--ink-2); font-weight: 600; font-size: 0.9rem;
+  transition: transform .12s ease, filter .15s ease;
+}
+.cr-type:active { transform: scale(.97); }
+.cr-type[aria-checked='true'] {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--accent) 18%, var(--glass-strong));
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+  color: var(--accent-text);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), 0 4px 12px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.cr-step { padding: 12px 14px 16px; }
+.cr-step .label { display: inline-block; }
+.cr-builder-actions { margin-top: 32px; }
+.cr-made h3 { overflow-wrap: anywhere; }
+.cr-code { font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.4; min-height: 96px; max-height: 180px; word-break: break-all; }
+.sheet .textarea.cr-code, .card .textarea.cr-code { background: var(--glass-inner); color: var(--ink); }
+
+/* ---- Remix ---- */
+.cr-option {
+  display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px 16px; min-height: 64px; text-align: left;
+  border-radius: var(--radius-card); color: inherit; font: inherit;
+  transition: border-color .15s, box-shadow .2s, transform .12s ease;
+}
+.cr-option:active { transform: scale(.985); }
+.cr-option[aria-checked='true'] {
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), color-mix(in srgb, var(--accent) 14%, var(--glass-strong));
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border));
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), 0 8px 22px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.cr-option-icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--glass-inner); border: 1px solid var(--glass-border); color: var(--ink-2); flex-shrink: 0; }
+.cr-option[aria-checked='true'] .cr-option-icon { background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-strong); color: var(--accent-text); box-shadow: inset 0 1px 1px var(--liquid-hi); }
+.cr-option-title { display: block; font-weight: 650; }
+.cr-option-desc { display: block; font-size: 0.85rem; color: var(--ink-2); margin-top: 2px; }
+.cr-source { border-left: 3px solid var(--accent); }
+.cr-preview .divider { margin: 16px 0; }
+.cr-preview-head { align-items: flex-start; }
+.cr-preview-head .tag { white-space: nowrap; flex-shrink: 0; }
+.cr-preview-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 12px; }
+.cr-preview-steps li::marker { color: var(--accent-text); font-weight: 700; }
+.cr-quote {
+  margin: 0 0 10px; padding: 2px 0 2px 14px; border-left: 3px solid var(--accent);
+  font-family: var(--font-display); font-size: 1.15rem; line-height: 1.4; color: var(--ink);
+}
+.cr-actions { margin-top: 12px; padding: 14px; }
+.cr-actions .row > .btn { flex: 1 1 auto; white-space: nowrap; }
+.cr-actions .row > .btn svg { flex-shrink: 0; }
+
+/* ---- Capsules ---- */
+.cr-kind svg { color: var(--accent-text); }
+.cr-sealed { position: relative; margin-top: 16px; padding: 32px 22px; text-align: center; border-radius: var(--radius-card); }
+/* A dashed inner seal line, drawn inside the glass rim. */
+.cr-sealed::before {
+  content: ''; position: absolute; inset: 8px; border-radius: calc(var(--radius-card) - 6px);
+  border: 1px dashed color-mix(in srgb, var(--ink) 28%, transparent); pointer-events: none;
+}
+.cr-sealed.ready { background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), color-mix(in srgb, var(--accent) 16%, var(--glass-strong)); }
+.cr-sealed.ready::before { border-style: solid; border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.cr-sealed > * { position: relative; }
+.cr-sealed-icon {
+  width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-inner); border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo); color: var(--ink-2);
+}
+.cr-sealed.ready .cr-sealed-icon { background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-strong); color: var(--accent-text); }
+.cr-countdown { font-size: 1.35rem; margin: 6px 0 0; color: var(--accent-text); }
+.cr-reveal { border-left: 3px solid var(--accent); }
+.cr-capsule-text { white-space: pre-wrap; font-family: var(--font-display); font-size: 1.12rem; }
+
+/* Gentle hover on pointer devices only. */
+@media (hover: hover) and (pointer: fine) {
+  .cr-tile:hover, .cr-type:hover, .cr-rec-btn:hover { filter: brightness(1.05); }
+  .cr-option:hover { transform: translateY(-1px); }
+  .cr-note:has(> .cr-note-main:hover) { filter: brightness(1.03); }
+}
+
+html[data-motion='reduce'] .cr-rec-dot { animation: none; }
+html[data-motion='reduce'] .cr-option:hover { transform: none; }

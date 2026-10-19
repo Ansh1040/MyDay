@@ -1,3 +1,16 @@
-node_modules/
+node_modules
+www
+*.log
+.DS_Store
+/test-results
+/screenshots-tmp
+android/app/build
+android/build
+android/.gradle
+android/local.properties
+android/app/release
+*.keystore
+preview-dist
 test-results/
 *.tar.gz
+*.tsbuildinfo

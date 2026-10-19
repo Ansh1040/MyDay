@@ -1,0 +1,283 @@
+/* Journeys: rabbit holes, Skill Arcade, return tickets, quests, collections, perspective switch, import.
+   Glass layer (docs/GLASS.md): every text sits on a glass panel (.glass, .glass-strong, .card, .list, .banner, .empty)
+   or a small .on-art backing. Nested items use --glass-inner (no second blur). Key buttons, active steps and selected
+   choices get Liquid Glass highlights. Theme tokens only. Motion is neutralised globally by html[data-motion='reduce']. */
+
+/* ---------- shared bits ---------- */
+/* Horizontal swipes are handled by the page (visible buttons exist too), so keep the browser from claiming them. */
+.j-swipe { touch-action: pan-y; overscroll-behavior-x: contain; }
+/* Entrance motion for wrappers that hold glass panels: transform only. The shared .rise also fades opacity, which makes
+   the wrapper a backdrop root and switches off the blur of every panel inside it. */
+@keyframes j-rise { from { transform: translateY(8px); } }
+.j-rise { animation: j-rise .35s ease both; }
+.j-clamp { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Layout for glass panels (the material itself comes from .glass / .glass-strong in glass.css). */
+.j-panel { border-radius: var(--radius-card); padding: 18px; }
+/* Helper sentences that would otherwise sit on the artwork: a small frosted note. */
+.j-note { margin: 0 0 12px; padding: 12px 16px; border-radius: var(--radius-ctl); color: var(--ink-2); line-height: 1.5; }
+.j-note:last-child { margin-bottom: 0; }
+/* Short centred hint under a stack (an .on-art backing that may wrap to two lines). */
+.j-hint { align-self: center; justify-content: center; text-align: center; margin: 2px auto 0; border-radius: var(--radius-ctl); color: var(--ink-2); }
+/* Sub-headings inside a section, on the artwork. */
+.j-sub-head { margin: 20px 0 10px; color: var(--ink-2); }
+.j-sub-head:first-child { margin-top: 0; }
+
+/* Section actions ("All skills", "Manage"…): small Liquid Glass pills, since they sit on the artwork. */
+.j-see-all {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: var(--radius-pill);
+  color: var(--accent-text); font-weight: 650; font-size: 0.85rem; white-space: nowrap;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 62%), var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat));
+  backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat));
+  transition: transform .12s ease, filter .15s ease;
+}
+.j-see-all:active { transform: scale(.97); }
+
+/* Nested liquid "selected" state (inside a panel, so no extra blur). */
+.j-trail-current,
+.j-step.selected > button,
+.j-stance-ticks button.on {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 65%), var(--glass-strong);
+  border-color: var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), 0 4px 12px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.j-inline-link {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; margin-top: 12px; padding: 12px 16px;
+  border-radius: var(--radius-ctl); color: var(--ink); text-align: left; font-size: 0.92rem; line-height: 1.4;
+  transition: transform .12s ease, filter .15s ease;
+}
+.j-inline-link:active { transform: scale(.985); }
+.card .j-inline-link { background: var(--glass-inner); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo); }
+.j-inline-link svg { color: var(--accent-text); flex-shrink: 0; }
+.j-dev-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); min-height: 44px; }
+.j-dev-panel { min-height: 56px; padding: 6px 10px 6px 16px; border-radius: var(--radius-ctl); }
+.j-remind-kept { padding: 4px 4px 4px 14px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-edge); }
+
+/* Helper text inside form and step cards sits on clear glass over busy artwork: use --ink-2 rather than --ink-3. */
+.j-form .faint, .j-step-card .faint, .j-ticket .faint, .j-compare-item .faint { color: var(--ink-2); }
+
+/* A banner nested in a glass panel doesn't need its own blur. */
+.j-panel .banner { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 1px 0 var(--glass-edge); }
+
+/* ---------- Journeys hub ---------- */
+.j-continue-row .label { margin-bottom: 2px; }
+.j-first { padding: 20px; }
+.j-holes { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.j-hole { display: block; }
+.j-hole.feature { padding: 22px; }
+@media (min-width: 640px) {
+  .j-holes { grid-template-columns: 1fr 1fr; }
+  .j-hole.feature { grid-column: 1 / -1; }
+}
+.j-skill-row .lr-sub { margin-top: 2px; }
+.j-perspective { padding: 20px; }
+.j-pq-row {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px 0;
+  background: none; border: 0; border-top: 1px solid color-mix(in srgb, var(--bg) 18%, transparent); color: inherit; text-align: left;
+}
+.j-hscroll { display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 2px 20px 6px; scroll-snap-type: x proximity; scrollbar-width: none; }
+.j-hscroll::-webkit-scrollbar { display: none; }
+.j-quest-tpl { flex: 0 0 min(250px, 74%); scroll-snap-align: start; }
+
+/* ---------- Rabbit hole ---------- */
+/* Breadcrumb trail: one glass strip; the current idea is a liquid pill. */
+.j-trail { margin: 4px 0 14px; padding: 5px; border-radius: var(--radius-pill); overflow-x: auto; scrollbar-width: none; }
+.j-trail::-webkit-scrollbar { display: none; }
+.j-trail ol { display: flex; align-items: center; gap: 2px; list-style: none; margin: 0; padding: 0; white-space: nowrap; }
+.j-trail li { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.j-trail li > svg { color: var(--ink-3); }
+.j-trail button {
+  min-height: 44px; max-width: 190px; padding: 0 14px; border-radius: var(--radius-pill); border: 1px solid transparent;
+  background: transparent; color: var(--ink-2); font-size: 0.82rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis;
+}
+.j-trail button:active { background: var(--glass-inner); }
+.j-trail-current {
+  display: inline-block; min-height: 44px; line-height: 42px; padding: 0 14px; border: 1px solid transparent; border-radius: var(--radius-pill);
+  font-size: 0.82rem; font-weight: 700; color: var(--ink); max-width: 230px; overflow: hidden; text-overflow: ellipsis;
+}
+
+.j-node { padding-top: 2px; }
+.j-node-head { padding: 20px 20px 18px; }
+.j-node-title { margin-top: 8px; }
+.j-node-title:focus { outline: none; }
+.j-node-title:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.j-node-meta { margin: 8px 0 0; color: var(--ink-2); }
+.j-question { margin: 16px 0 0; padding-left: 14px; border-left: 3px solid var(--accent); color: var(--ink); line-height: 1.3; }
+/* The reading panel: local frost (glass-strong) with the panel rim. */
+.prose.j-body { margin-top: 12px; max-width: none; padding: 18px 20px 4px; border-radius: var(--radius-card); }
+
+.j-surprise { margin: 12px 0 8px; padding: 18px 18px 16px; border-radius: var(--radius-card); }
+.glass.j-surprise { background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), color-mix(in srgb, var(--accent) 14%, var(--glass-strong)); }
+.j-surprise p { margin: 8px 0 14px; font-family: var(--font-display); font-style: var(--display-style); font-size: 1.15rem; line-height: 1.4; color: var(--ink); }
+
+.j-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
+.j-actions .btn { min-height: 44px; }
+
+.j-lenses { border-radius: var(--radius-card); overflow: hidden; }
+.j-lens + .j-lens { border-top: 1px solid var(--line); }
+.j-lens > button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 12px 16px; background: none; border: 0; text-align: left; color: var(--ink); font-weight: 600; }
+.j-lens > button > svg:first-child { color: var(--accent-text); flex-shrink: 0; }
+.j-lens.open > button { background: var(--glass-inner); }
+.j-chev { color: var(--ink-3); transition: transform 0.2s ease; flex-shrink: 0; }
+.j-lens.open .j-chev { transform: rotate(180deg); }
+.j-lens-take { padding: 4px 16px 16px 42px; color: var(--ink-2); line-height: 1.6; background: var(--glass-inner); }
+
+/* Threads to follow: glass cards with a liquid rim (they're the main way forward). */
+.j-branch { display: flex; align-items: center; gap: 14px; width: 100%; min-height: 88px; padding: 18px; border-radius: var(--radius-card); text-align: left; color: var(--ink); }
+.glass.j-branch { box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), var(--glass-shadow); }
+.j-branch-label { display: block; margin-top: 6px; }
+.j-branch .tag { display: inline-flex; }
+.j-branch-arrow { color: var(--accent-text); flex-shrink: 0; }
+@media (hover: hover) and (pointer: fine) {
+  .j-branch:hover { border-color: color-mix(in srgb, var(--accent) 60%, var(--glass-border)); transform: translateY(-1px); }
+  .j-see-all:hover, .j-inline-link:hover { filter: brightness(1.04); }
+}
+
+.j-prevnext-panel { margin-top: 24px; padding: 8px 8px 10px; }
+.j-prevnext { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.j-prevnext .btn { min-height: 44px; }
+.j-prevnext-tip { margin: 8px 8px 0; text-align: center; }
+
+.j-map svg { width: 100%; height: auto; max-height: 320px; margin: 0 auto 12px; }
+.j-map-edge { stroke: var(--ink-3); stroke-opacity: 0.4; stroke-width: 2; }
+.j-map-node circle { fill: var(--glass-strong); stroke: var(--ink-3); stroke-width: 2; }
+.j-map-node.hidden circle { fill: var(--glass-inner); stroke: var(--ink-3); stroke-opacity: 0.5; }
+.j-map-node.next circle { fill: var(--glass-strong); stroke: var(--accent); stroke-dasharray: 3 3; }
+.j-map-node.explored circle { fill: var(--accent); stroke: var(--accent); cursor: pointer; }
+.j-map-node.current circle { fill: var(--accent); stroke: var(--accent); }
+.j-map-node.current circle.ring { fill: none; stroke: var(--ink); stroke-width: 2; }
+.j-map-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 12px; }
+.j-map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.j-map-legend .dot { width: 11px; height: 11px; border-radius: 50%; display: inline-block; border: 2px solid var(--ink-3); }
+.j-map-legend .dot.explored { background: var(--accent); border-color: var(--accent); }
+.j-map-legend .dot.next { border-color: var(--accent); border-style: dashed; }
+.j-map-legend .dot.hidden { background: var(--glass-inner); border-color: color-mix(in srgb, var(--ink-3) 50%, transparent); }
+.j-map-tags { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+/* ---------- Skill Arcade ---------- */
+.j-start-here {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; margin-top: 16px; padding: 10px 14px;
+  border-radius: var(--radius-ctl); color: var(--ink); text-align: left;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 65%), var(--glass-inner);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo);
+  transition: transform .12s ease;
+}
+.j-start-here:active { transform: scale(.985); }
+.j-start-here .label { color: var(--accent-text); flex-shrink: 0; }
+.j-start-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.j-continue-card { padding: 22px; }
+
+/* Level track: one glass panel; the selected level is a liquid row. */
+.j-track { list-style: none; margin: 0; padding: 8px; border-radius: var(--radius-card); }
+.j-step { position: relative; }
+.j-step:not(:last-child)::after { content: ''; position: absolute; left: 34px; top: 54px; bottom: -8px; width: 2px; background: color-mix(in srgb, var(--ink-3) 35%, transparent); }
+.j-step.complete:not(:last-child)::after { background: var(--accent); }
+.j-step > button {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 66px; padding: 10px 12px; margin-bottom: 4px;
+  background: none; border: 1px solid transparent; border-radius: var(--radius-ctl); text-align: left; color: inherit;
+}
+.j-step-dot {
+  position: relative; z-index: 1; width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--ink-3) 45%, transparent); background: var(--glass-strong); color: var(--ink-2);
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.j-step.open .j-step-dot { border-color: var(--accent); color: var(--accent-text); }
+.j-step.complete .j-step-dot {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--accent); border-color: var(--accent); color: var(--accent-ink);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo);
+}
+.j-step.locked .j-step-dot { background: var(--glass-inner); border-style: dashed; color: var(--ink-3); }
+.j-step-name { display: block; font-weight: 650; }
+.j-step.locked .j-step-name { color: var(--ink-2); }
+
+.j-level-intro .progress { margin-top: 4px; }
+.j-level-intro .banner { margin-bottom: 14px; }
+
+.j-realworld { list-style: none; margin: 0; padding: 0; }
+.j-realworld li { padding: 12px 0; border-bottom: 1px solid var(--line); line-height: 1.5; }
+.j-realworld li:first-child { padding-top: 0; }
+
+.j-work { display: block; text-align: left; }
+.j-snippet { margin: 10px 0 0; padding: 10px 12px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); color: var(--ink); font-size: 0.8rem; white-space: pre-wrap; max-height: 160px; overflow: hidden; }
+.j-snippet-text { margin: 10px 0 0; color: var(--ink-2); white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* ---------- Return tickets ---------- */
+.j-ticket-notes { margin: 6px 0 14px; }
+.j-ticket-notes dt {
+  margin-top: 10px; font-family: var(--font-label); font-size: var(--label-size); text-transform: var(--label-transform);
+  letter-spacing: var(--label-tracking); font-weight: 600; color: var(--ink-3);
+}
+.j-ticket-notes dd { margin: 2px 0 0; color: var(--ink); line-height: 1.5; white-space: pre-wrap; }
+
+/* ---------- Quests ---------- */
+.j-quest-intro .prose { margin: 0 0 8px; }
+.j-prompt-edit {
+  display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 12px 14px 14px; border-radius: var(--radius-card);
+  border: 1px solid var(--glass-border); background: var(--glass-inner); box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.j-prompt-edit .icon-btn:disabled, .j-col-tools .icon-btn:disabled { opacity: 0.3; cursor: default; }
+.j-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.j-prompt-legend { display: block; padding: 0; max-width: 100%; }
+.field > .j-prompt-legend { color: var(--ink); font-size: 1rem; font-weight: 400; }
+.j-choice { cursor: pointer; min-height: 44px; max-width: 100%; white-space: normal; text-align: left; }
+.chip.j-choice.on {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), color-mix(in srgb, var(--ink) 88%, transparent);
+  color: var(--bg); border-color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+.j-choice:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+.j-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+
+.j-compare { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 560px) { .j-compare { grid-template-columns: 1fr 1fr; } }
+.j-answer { padding: 14px 16px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-edge); min-width: 0; }
+.j-answer.mine { background: color-mix(in srgb, var(--accent) 14%, var(--glass-inner)); }
+.j-answer p { margin: 6px 0 0; white-space: pre-wrap; line-height: 1.55; overflow-wrap: anywhere; }
+
+.j-codebox { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--radius-card); background: var(--glass-inner); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-edge); }
+.j-codebox .textarea { min-height: 84px; font-size: 0.78rem; word-break: break-all; }
+
+/* ---------- Import ---------- */
+.j-import-box { min-height: 140px; font-size: 0.82rem; word-break: break-all; }
+.j-preview-notes { margin: 12px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.j-preview-prompts { margin: 0 0 4px; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+
+/* ---------- Collections ---------- */
+.j-col-peek { margin: 10px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.j-col-actions { gap: 0; margin: 10px -8px -8px; }
+.j-col-list { list-style: none; margin: 0; padding: 0; }
+.j-col-item { gap: 4px; padding: 6px 4px 6px 16px; }
+.j-col-open { display: block; min-width: 0; min-height: 44px; padding: 6px 0; background: none; border: 0; color: inherit; text-align: left; }
+.j-col-open:disabled { cursor: default; opacity: 0.7; }
+.j-col-open .label { display: block; margin-bottom: 2px; }
+.j-blur { font-style: italic; color: var(--ink-2); }
+.j-count-row { margin-bottom: 12px; }
+/* The soft accent button sits on the artwork here: give it frosted glass under the accent tint. */
+.j-count-row .btn.soft { background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), color-mix(in srgb, var(--accent) 16%, var(--glass-strong)); }
+
+/* ---------- Perspective Switch ---------- */
+.j-pq { display: block; }
+.j-ps-head { margin: 8px 0 14px; padding: 20px 20px 18px; }
+.j-flow-progress { display: flex; flex-direction: column; gap: 6px; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
+.j-step-card { padding: 20px; }
+.j-step-card h2:focus { outline: none; }
+.j-step-card h2:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; }
+.field > span.j-lens-prompt { font-family: var(--font-display); font-style: var(--display-style); font-size: 1.08rem; font-weight: var(--display-weight); color: var(--ink); line-height: 1.3; }
+.j-stance { padding: 14px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-edge); }
+.j-stance-value { color: var(--accent-text); }
+.j-stance-ticks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.j-stance-ticks button { min-height: 44px; padding: 4px 2px; background: none; border: 1px solid transparent; border-radius: var(--radius-ctl); color: var(--ink-2); font-size: 0.68rem; line-height: 1.2; text-align: center; }
+.j-stance-ticks button.on { color: var(--ink); font-weight: 700; }
+.j-summary h2:focus { outline: none; }
+
+/* Reduced transparency: the tokens already switch to opaque glass; drop the extra blur on our own pills too. */
+@media (prefers-reduced-transparency: reduce) {
+  .j-see-all { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* User-written text (titles, names, pasted links) can contain long unbroken words: wrap them instead of widening the page. */
+.j-wrap, .j-ticket, .j-col-card, .j-col-item, .j-compare-item, .j-fieldset, .j-prompt-legend, .j-prompt-edit, .j-preview-prompts, .j-summary, .j-step-card, .j-node-head, .j-ps-head, .j-quest-intro { overflow-wrap: anywhere; }

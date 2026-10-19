@@ -1,0 +1,535 @@
+/* Discover, Onboarding and Plot Twist. Theme + glass tokens only — every rule must work in all 4 themes × day/night.
+   Glass rules (docs/GLASS.md): no text directly on the artwork, no opaque fills, Liquid Glass only for key controls. */
+
+/* Short multi-line captions that sit on the artwork get a small frosted backing (like .on-art, but not pill-shaped). */
+.dc-caption {
+  display: inline-block; max-width: 100%; padding: 6px 12px; border-radius: 12px; color: var(--ink-2);
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.on-art.tiny, .dc-tagline { font-size: 0.75rem; color: var(--ink-2); padding: 4px 10px; }
+
+/* Day mode: parts of the artworks are dark (Plum's pagodas and trunks, Graphite's windows) or deeply saturated
+   (Vermilion's sun), and clear glass can't lift them enough for small text — measured 1.5–3.5:1. Content panels in
+   these screens therefore take the text-dense frost (GLASS.md: text-dense areas get local extra frost), so body text
+   stays ≥ 4.5:1 over any part of the art. Every panel, tinted card and fallback inherits it; nested .glass-inner items
+   are unchanged. Night already passes with clear glass (the veil darkens the art). */
+html[data-mode='light'] .dc-area,
+html[data-mode='light'] .ob { --glass-fill: var(--glass-strong); }
+/* Small secondary text (labels, faint captions, card reason lines) uses --ink-2, as glass.css does for section-head
+   labels: --ink-3 measured 3.3–4.4:1 over the busiest parts of the art. Size and case keep the hierarchy. */
+.dc-area :is(.label:not(.accent), .faint):not(.card.inverse *),
+.ob :is(.label:not(.accent), .faint):not(.card.inverse *) { color: var(--ink-2); }
+/* Controls nested inside a glass panel or strip don't get a second blur (GLASS.md: never stack blur); the panel
+   behind them is already frosted, so they keep their liquid fill, rim and highlights only. */
+:is(.dc-bar.stuck, .dc-bar.prominent, .ob-top, .ob-foot, :is(.dc-area, .ob-body) :is(.glass, .card, .list, .empty, .banner), .sheet .dc-area)
+  :is(.chip, .btn, .liquid, .icon-btn, .segmented button, .search, .switch .thumb) {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+/* Chips that sit straight on the artwork (topic and filter rows) get a little more frost than nested chips, so their
+   labels stay readable over the darkest parts of the art (measured 3.8–4.5:1 with the plain liquid fill in day). */
+html[data-mode='light'] .dc-area .chip:not([aria-pressed='true']):not(:is(.glass, .card, .list, .empty, .banner, .sheet) *) {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), color-mix(in srgb, var(--glass-inner) 40%, var(--glass-strong));
+}
+/* At night the soft button's white highlight sits under light accent text (3.4–4.4:1); use the night sheen instead. */
+html[data-mode='dark'] :is(.dc-area, .ob) .btn.soft { background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), var(--accent-soft); }
+
+/* =========================================================
+   Discover — sticky view switcher (Liquid Glass tabs) + Cobalt's prominent search bar
+   ========================================================= */
+.dc-bar {
+  position: sticky;
+  top: calc(52px + env(safe-area-inset-top));
+  z-index: 15;
+  margin: 0 -20px 6px;
+  padding: 6px 20px 8px;
+  border-bottom: 1px solid transparent;
+}
+/* Once stuck (class set from JS), content scrolls beneath: give the row a clear glass strip so text never shows around the pill. */
+.dc-bar.stuck:not(.prominent) {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 70%), var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-bottom-color: var(--glass-border);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+@media (min-width: 760px) {
+  .dc-bar.stuck:not(.prominent) { border: 1px solid var(--glass-border); border-top: 0; border-radius: 0 0 var(--radius-card) var(--radius-card); }
+}
+.dc-bar.prominent {
+  display: flex; flex-direction: column; gap: 10px;
+  margin: 0 -20px 8px;
+  padding: 10px 20px 10px;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 70%), var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-top: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-edge), 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+@media (min-width: 760px) {
+  .dc-bar.prominent { border: 1px solid var(--glass-border); border-radius: var(--radius-card); }
+}
+
+.dc-switch { display: flex; align-items: center; gap: 8px; }
+.dc-step { flex-shrink: 0; }
+.dc-step[aria-disabled='true'], .dc-shelf-nav .icon-btn[aria-disabled='true'] { opacity: 0.38; cursor: default; filter: none; }
+
+.dc-tabs {
+  position: relative; isolation: isolate; flex: 1; min-width: 0;
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 4px; border-radius: var(--radius-pill);
+}
+/* The tab labels sit over the top of the artwork (Vermilion's sun): a little more frost than a plain liquid control. */
+.dc-tabs.liquid,
+html[data-mode='dark'] .dc-tabs.liquid {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--glass-inner) 40%, var(--glass-strong));
+}
+/* The lens follows the pager's scroll position (--dc-pos is set from JS on every frame of a swipe). */
+.dc-lens {
+  position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 4px;
+  width: calc((100% - 8px) / 3);
+  border-radius: var(--radius-pill);
+  transform: translateX(calc(var(--dc-pos, 0) * 100%));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.14) 62%), var(--glass-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo), 0 4px 14px rgba(0, 0, 0, 0.14);
+  pointer-events: none;
+}
+html[data-mode='dark'] .dc-lens { background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.04) 62%), var(--glass-inner); }
+.dc-tabs { container-type: inline-size; }
+.dc-tabs [role='tab'] {
+  position: relative; z-index: 1; min-width: 0; min-height: 44px; padding: 0 4px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  border: 0; background: none; border-radius: var(--radius-pill);
+  font-weight: 650; font-size: 0.92rem; color: var(--ink-2); white-space: nowrap;
+  transition: color 0.2s ease, transform 0.15s ease;
+}
+.dc-tabs [role='tab'][aria-selected='true'] { color: var(--ink); }
+.dc-tabs [role='tab']:active { transform: scale(0.96); }
+.dc-tabs [role='tab']:focus-visible { outline-offset: -3px; border-radius: var(--radius-pill); }
+@media (hover: hover) and (pointer: fine) {
+  .dc-tabs [role='tab'][aria-selected='false']:hover { color: var(--ink); }
+}
+/* Inverse ink badge: readable over any art in every theme (accent-on-accent-soft measured 3.1–4.4:1). */
+.dc-tab-count {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  background: color-mix(in srgb, var(--ink) 88%, transparent); color: var(--bg); font-size: 0.72rem; font-weight: 750;
+}
+/* Narrow phones: the three labels plus the Saved count must fit their thirds (320px: ~53px each). Below that the
+   visual count is dropped; the tab still announces it and the Saved view shows it in its heading. */
+@container (max-width: 239px) {
+  .dc-tabs [role='tab'] { font-size: 0.84rem; padding: 0 2px; gap: 3px; }
+  .dc-tab-count { min-width: 18px; height: 18px; padding: 0 4px; font-size: 0.66rem; }
+  .dc-tab-count[data-long] { display: none; }
+}
+@container (max-width: 199px) {
+  .dc-tab-count { display: none; }
+}
+
+/* =========================================================
+   Discover — pager: one view per page, CSS scroll-snap, height follows the active view (set from JS)
+   ========================================================= */
+.dc-pager {
+  display: flex; align-items: flex-start;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* none (not contain): also suppresses overscroll effects such as the browser's swipe-back at the first view. */
+  overscroll-behavior-x: none;
+  scrollbar-width: none;
+  margin: 0 -20px;
+}
+.dc-pager::-webkit-scrollbar { display: none; }
+.dc-page {
+  flex: 0 0 100%; width: 100%; min-width: 0;
+  scroll-snap-align: start; scroll-snap-stop: always;
+  /* Room for glass shadows and focus rings: the pager clips vertically. */
+  padding: 4px 20px 30px;
+}
+.dc-page > .section:first-child { margin-top: 6px; }
+/* A horizontal swipe that nothing can scroll (e.g. rightwards on the first view) must not become the browser's
+   swipe-back navigation while the swipeable Discover views or onboarding steps are on screen. */
+html:has(.dc-pager), html:has(.ob) { overscroll-behavior-x: none; }
+/* At a horizontal scroller's edge only panning that can move it is allowed (edgePan in Discover.tsx sets data-hedge):
+   otherwise Chrome may treat the swipe as browser back/forward even inside overscroll-behavior: none scrollers. */
+[data-hedge='start'] { touch-action: pan-right pan-y pinch-zoom; }
+[data-hedge='end'] { touch-action: pan-left pan-y pinch-zoom; }
+[data-hedge='both'] { touch-action: pan-y pinch-zoom; }
+/* Swipeable cards inside the pager only claim the direction the pager can't use: in For you (first view) a card swipes
+   right to save and a left swipe pans to Explore; in Saved (last view) a card swipes left to remove and a right swipe
+   pans back to Explore. */
+.dc-page-foryou .swipe-wrap { touch-action: pan-right pan-y; }
+.dc-page-saved .swipe-wrap { touch-action: pan-left pan-y; }
+/* Nested horizontal scrollers must never hand their swipe on to the pager (or to the browser's swipe-back). */
+.dc-page .chips.scroll, .dc-bar .chips.scroll, .dc-resume, .dc-shelf-track { overscroll-behavior-x: none; }
+
+/* =========================================================
+   Discover — For you: search + topic filter bar
+   ========================================================= */
+.dc-filterbar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 6px; }
+.dc-bar .dc-filterbar { margin: 0; gap: 8px; }
+.dc-searchbtn { width: 100%; text-align: left; cursor: text; font-size: 1rem; color: var(--ink-2); }
+.dc-searchbtn > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dc-filterbar:not(.prominent) .dc-searchbtn, .dc-explore-search .dc-searchbtn { min-height: 46px; }
+.dc-filterbar.prominent .dc-searchbtn { min-height: 52px; }
+.dc-filterbar.prominent .dc-searchbtn svg { color: var(--accent-text); }
+@media (hover: hover) and (pointer: fine) { .dc-searchbtn:hover { border-color: color-mix(in srgb, var(--accent) 40%, var(--glass-border)); } }
+/* Chips snap to "start"; without matching scroll-padding the row snaps 20px in and the first chip touches the screen edge. */
+.dc-filterbar .chips.scroll, .dc-search-chips { scroll-padding-inline: 20px; }
+.dc-count {
+  display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  background: var(--accent); color: var(--accent-ink); font-size: 0.72rem; font-weight: 700;
+}
+
+.dc-topic-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 16px; margin: 8px 0 4px; border-radius: var(--radius-card); }
+.dc-active { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 4px 6px 4px 14px; margin: 8px 0 4px; border-radius: var(--radius-ctl); }
+
+/* =========================================================
+   Discover — For you feed
+   ========================================================= */
+.dc-feed { display: flex; flex-direction: column; gap: 14px; }
+.dc-kicker { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 14px 0 -4px; }
+.dc-kicker:first-child { margin-top: 0; }
+
+.dc-card { position: relative; height: 100%; }
+.dc-card > .card { height: 100%; }
+/* leave room for the overflow button in the card's top row */
+.dc-card .card-tap > .row:first-child { padding-right: 40px; }
+.dc-more { position: absolute; top: 8px; right: 8px; z-index: 2; color: var(--ink); }
+.dc-feature .card { padding: 24px 22px 20px; }
+.dc-feature .card h3 { font-size: clamp(1.6rem, 6.4vw, 2.1rem); }
+
+.dc-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: stretch; }
+.dc-pair > .swipe-wrap, .dc-pair .swipe-front { height: 100%; }
+@media (max-width: 359px) { .dc-pair { grid-template-columns: 1fr; } }
+
+.dc-cta { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-weight: 650; font-size: 0.95rem; color: var(--accent-text); }
+.card.inverse .dc-cta { color: var(--bg); }
+.card.inverse .dc-cta svg { color: var(--accent); }
+
+.dc-twist { padding: 22px; }
+.dc-twist h3 { margin: 10px 0 8px; }
+.dc-twist p { margin: 0; }
+.dc-twist .dc-quote { font-family: var(--font-display); font-style: var(--display-style); font-size: 1.1rem; line-height: 1.35; }
+
+.dc-rabbit { border-top: 3px solid var(--accent); padding-top: 20px; }
+.dc-rabbit h3 { margin: 8px 0 10px; }
+.dc-hook {
+  margin: 0 0 14px; padding-left: 14px; border-left: 2px solid var(--line);
+  font-family: var(--font-display); font-style: var(--display-style); font-size: 1.12rem; line-height: 1.4; color: var(--ink-2);
+}
+
+/* "Pick up where you left off" — horizontal row */
+.dc-resume {
+  display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 -20px; padding: 2px 20px 14px; scroll-snap-type: x proximity; scroll-padding-inline: 20px;
+}
+.dc-resume::-webkit-scrollbar { display: none; }
+.dc-resume-item {
+  flex: 0 0 min(250px, 74%); scroll-snap-align: start; text-align: left; color: inherit; text-decoration: none;
+  display: flex; flex-direction: column; gap: 4px; min-height: 96px; padding: 12px 14px; border-radius: var(--radius-ctl);
+  transition: transform 0.15s ease;
+}
+.dc-resume-item:active { transform: scale(0.97); }
+.dc-resume-item .dc-resume-title { font-weight: 650; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dc-resume-item .dc-resume-sub { font-size: 0.8rem; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* Surprise me strip */
+.dc-surprise {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 16px;
+  padding: 14px 14px 14px 16px; border-radius: var(--radius-card);
+}
+.dc-surprise .grow { min-width: 180px; }
+.dc-link {
+  position: relative; background: none; border: 0; padding: 0; color: var(--accent-text); font: inherit; font-weight: 650;
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; min-height: 24px;
+}
+/* Inline link inside a sentence: the visible text stays inline, the touch area grows to 44px tall. */
+.dc-link::after { content: ''; position: absolute; inset: -10px -6px; }
+
+/* card overflow menu */
+.dc-menu .list-row svg { flex-shrink: 0; }
+.dc-why { margin-top: 14px; padding: 14px 16px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); }
+.dc-why ul { margin: 6px 0 10px; padding-left: 18px; }
+.dc-why li { margin: 4px 0; }
+
+/* end of feed */
+.dc-end { text-align: center; padding: 28px 18px 22px; margin-top: 22px; border-radius: var(--radius-card); }
+.dc-end h3 { margin: 6px 0 6px; }
+.dc-end p { margin: 0 auto 16px; max-width: 42ch; }
+.dc-end .row { justify-content: center; }
+.dc-method { margin: 14px 0 0; padding: 10px 14px; border-radius: var(--radius-ctl); text-align: center; color: var(--ink-2); }
+
+/* filters sheet: the action row stays reachable while the sheet scrolls */
+.dc-filter-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.dc-filter-group > .label { margin: 0; }
+.dc-sheet-foot {
+  position: sticky; bottom: -1px; z-index: 1; margin: 0 -4px; padding: 10px 4px 2px;
+  background: var(--glass-strong);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border-radius: var(--radius-ctl) var(--radius-ctl) 0 0;
+}
+
+/* =========================================================
+   Discover — Possibility Shelf
+   ========================================================= */
+.dc-shelf { margin: 8px 0 2px; }
+.dc-shelf-head { align-items: center; margin-bottom: 4px; }
+.dc-shelf-nav { display: flex; gap: 8px; }
+.dc-shelf-track {
+  position: relative; display: flex; gap: 12px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; scroll-padding-inline: 20px;
+  scrollbar-width: none;
+  margin: 0 -20px; padding: 8px 20px 24px;
+}
+.dc-shelf-track::-webkit-scrollbar { display: none; }
+.dc-shelf-track:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; border-radius: var(--radius-card); }
+.dc-shelf-card { flex: 0 0 min(228px, 72%); scroll-snap-align: start; display: flex; padding: 0; overflow: hidden; }
+.dc-shelf-tap {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; width: 100%;
+  padding: 12px 14px 16px; background: none; border: 0; color: inherit; text-align: left;
+}
+.dc-shelf-art {
+  align-self: stretch; display: grid; place-items: center; height: 112px; margin-bottom: 6px;
+  border-radius: calc(var(--radius-card) - 8px);
+  background: radial-gradient(circle at 28% 18%, var(--glass-sheen), transparent 62%), color-mix(in srgb, var(--accent) 12%, var(--glass-inner));
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.dc-shelf-art .glass-art { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.dc-shelf-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.2; min-height: 2.4em; }
+.dc-shelf-why { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: auto; padding-top: 2px; }
+html[data-motion='full'] .dc-shelf-card { transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease; }
+@media (hover: hover) and (pointer: fine) {
+  html[data-motion='full'] .dc-shelf-card:hover { transform: translateY(-3px); }
+  html[data-motion='full'] .dc-shelf-card:hover .glass-art { transform: rotate(-6deg) scale(1.06); }
+}
+.dc-shelf-foot { display: flex; align-items: center; justify-content: center; gap: 8px 12px; flex-wrap: wrap; margin-top: -12px; }
+.dc-dots {
+  display: inline-flex; align-items: center; padding: 0 4px; border-radius: var(--radius-pill);
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.dc-dot { width: 36px; height: 44px; display: grid; place-items: center; padding: 0; border: 0; background: none; border-radius: var(--radius-pill); }
+.dc-dot i { display: block; width: 8px; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 32%, transparent); transition: width 0.25s ease, background 0.25s ease; }
+.dc-dot[aria-current='true'] i { width: 22px; background: var(--accent); }
+@media (hover: hover) and (pointer: fine) { .dc-dot:hover i { background: color-mix(in srgb, var(--ink) 55%, transparent); } .dc-dot[aria-current='true']:hover i { background: var(--accent); } }
+@media (max-width: 380px) { .dc-dot { width: 32px; } }
+
+/* =========================================================
+   Discover — Explore
+   ========================================================= */
+.dc-explore-search { margin: 2px 0 0; }
+.dc-topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 560px) { .dc-topic-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.dc-topic-tile {
+  display: flex; flex-direction: column; justify-content: center; gap: 2px; min-height: 64px; padding: 12px 14px;
+  text-align: left; color: inherit; border-radius: var(--radius-ctl);
+  transition: transform 0.15s ease, box-shadow 0.25s ease;
+}
+.dc-topic-name { font-weight: 650; line-height: 1.25; }
+.dc-topic-tile:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) { html[data-motion='full'] .dc-topic-tile:hover { transform: translateY(-2px); } }
+.dc-more-btn { margin-top: 10px; }
+.dc-x-filters { padding: 16px 18px 14px; }
+.dc-x-filters .dc-filter-group { margin-bottom: 14px; }
+.dc-x-formats { margin: 0 -18px; padding: 2px 18px 4px; scroll-padding-inline: 18px; }
+.dc-x-count { gap: 8px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--line); }
+.dc-x-results { margin-top: 12px; }
+
+/* Saved view heading */
+.dc-view-head { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; margin: 2px 0 14px; border-radius: var(--radius-card); }
+.dc-view-head h2 { margin: 0 0 4px; }
+.dc-view-head p { margin: 0; }
+.dc-view-icon { color: var(--accent-text); margin-top: 4px; flex-shrink: 0; }
+
+/* =========================================================
+   Search + Topic page
+   ========================================================= */
+.dc-search-form { margin: 4px 0 12px; }
+.dc-search-input { padding-right: 4px; min-height: 52px; }
+.dc-search-input input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.dc-results-note { margin: 10px 0 4px; }
+.dc-recent .list-row { min-height: 52px; }
+.dc-recent-term { background: none; border: 0; padding: 0; text-align: left; min-height: 44px; color: inherit; font-weight: 600; }
+.dc-note { margin: 18px 0 0; padding: 14px 16px; border-radius: var(--radius-ctl); }
+
+.dc-topic-panel { padding: 16px; margin: 4px 0 0; border-radius: var(--radius-card); }
+.dc-topic-actions { gap: 8px; }
+
+/* =========================================================
+   Onboarding — every step is a stack of glass panels over the theme artwork
+   ========================================================= */
+.ob { min-height: 100dvh; display: flex; flex-direction: column; background: transparent; }
+.ob-top, .ob-foot {
+  position: sticky; z-index: 10;
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 80%), var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+.ob-top { top: 0; padding-top: env(safe-area-inset-top); border-bottom: 1px solid var(--glass-border); box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06); }
+.ob-top-inner { max-width: 640px; margin: 0 auto; padding: 6px 12px 10px; }
+.ob-top-row { display: flex; align-items: center; gap: 8px; min-height: 52px; }
+.ob-top-row .ob-where { flex: 1; text-align: center; color: var(--ink-2); }
+.ob-top-side { min-width: 88px; display: flex; }
+.ob-top-side.right { justify-content: flex-end; }
+.ob-body { flex: 1; max-width: 640px; padding-top: 14px; padding-bottom: 32px; touch-action: pan-y; }
+.ob-step { display: flex; flex-direction: column; gap: 12px; animation: ob-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes ob-in { from { transform: translateY(10px); } }
+.ob-panel { padding: 20px 18px; }
+.ob-panel > :last-child { margin-bottom: 0; }
+.ob-step-title { outline: none; margin: 6px 0 10px; }
+.ob-lede { font-size: 1.05rem; color: var(--ink-2); margin: 0 0 18px; max-width: 54ch; }
+.ob-foot { bottom: 0; border-top: 1px solid var(--glass-border); padding: 12px 0 calc(12px + env(safe-area-inset-bottom)); }
+.ob-foot-inner { max-width: 640px; margin: 0 auto; padding: 0 20px; display: flex; gap: 10px; }
+.ob-foot-inner .btn.primary { flex: 1; }
+.ob-hint { margin: 10px 0 0; text-align: center; color: var(--ink-2); }
+.ob-count { margin: 14px 0 0; }
+
+.ob-areas .ob-area { align-items: flex-start; gap: 14px; padding: 14px 16px; }
+.ob-area-icon { width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center; border-radius: var(--radius-ctl); background: var(--accent-soft); color: var(--accent-text); }
+.ob-area h3 { margin: 0 0 2px; }
+.ob-area p { margin: 0; }
+.ob-banner { margin: 0; }
+.ob-caption { align-self: flex-start; margin: 0; }
+
+.ob-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.ob-tiles.one { grid-template-columns: 1fr; }
+@media (min-width: 560px) { .ob-tiles.one { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.ob-tile {
+  position: relative; text-align: left; color: inherit; font: inherit;
+  display: flex; flex-direction: column; gap: 6px; min-height: 44px; padding: 14px;
+  border-radius: var(--radius-ctl);
+  transition: transform 0.15s ease, border-color 0.15s, box-shadow 0.2s;
+}
+.ob-tile[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: linear-gradient(155deg, var(--glass-sheen), transparent 45%), color-mix(in srgb, var(--accent) 18%, var(--glass-fill));
+  box-shadow: inset 0 0 0 1px var(--accent), var(--glass-shadow);
+}
+.ob-tile .ob-tile-head { display: flex; align-items: center; gap: 8px; font-weight: 650; padding-right: 24px; }
+.ob-tile .ob-tile-head svg { color: var(--accent-text); flex-shrink: 0; }
+.ob-tile .ob-check { position: absolute; top: 12px; right: 12px; color: var(--accent-text); }
+
+.ob-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.ob-field > .label { margin: 0; }
+
+/* Theme step: each theme's real artwork as the thumbnail */
+.ob-themes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 620px) { .ob-themes { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ob-theme {
+  position: relative; text-align: left; color: inherit; font: inherit;
+  display: flex; flex-direction: column; gap: 4px; padding: 8px 8px 12px; border-radius: var(--radius-card);
+  transition: transform 0.15s ease, box-shadow 0.25s ease, border-color 0.2s;
+}
+.ob-theme[aria-checked='true'] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent), 0 10px 28px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.ob-art { position: relative; display: block; aspect-ratio: 1 / 1; margin-bottom: 6px; overflow: hidden; border-radius: calc(var(--radius-card) - 6px); border: 1px solid var(--glass-border); }
+.ob-art img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.ob-art-check {
+  position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--accent); color: var(--accent-ink);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.5), 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+.ob-theme-name { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 4px; }
+.ob-dots { display: inline-flex; gap: 3px; flex-shrink: 0; }
+.ob-dots i { width: 10px; height: 10px; border-radius: 50%; border: 1px solid var(--glass-border); }
+.ob-art-note, .ob-in-use { padding: 0 4px; }
+.ob-in-use { color: var(--accent-text); font-weight: 650; }
+.ob-preview { margin: 0; }
+.ob-preview h3 { margin: 8px 0 6px; }
+
+.ob-tile:active, .ob-theme:active { transform: scale(0.97); }
+@media (hover: hover) and (pointer: fine) {
+  html[data-motion='full'] .ob-tile:hover, html[data-motion='full'] .ob-theme:hover { transform: translateY(-2px); }
+  html[data-motion='full'] .ob-theme:hover .ob-art img { transform: scale(1.04); }
+}
+
+.ob-summary { margin: 0; border-top: 1px solid var(--line); }
+.ob-summary > div { display: grid; grid-template-columns: 110px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.ob-summary > div:last-child { border-bottom: 0; padding-bottom: 0; }
+.ob-summary dt { margin: 0; }
+.ob-summary dd { margin: 0; }
+
+.ob-goal-custom { display: inline-flex; align-items: center; gap: 0; padding-right: 0; }
+/* Full 44px remove button; the chip's 1px rim overlaps it slightly so the chip stays 44px tall. */
+.ob-goal-custom .icon-btn { width: 44px; height: 44px; margin: -1px -1px -1px 0; border-radius: var(--radius-pill); }
+
+/* =========================================================
+   Plot Twist
+   ========================================================= */
+.pt-dial-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; align-items: end; margin: 10px 0 4px; }
+.pt-dial-step {
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; gap: 6px;
+  min-height: 44px; padding: 4px 0 0; border: 0; background: none; color: var(--ink-2); border-radius: 8px;
+  transition: transform 0.15s ease;
+}
+.pt-dial-step:active { transform: scale(0.95); }
+.pt-dial-step i { display: block; border-radius: 6px 6px 3px 3px; background: color-mix(in srgb, var(--ink) 12%, transparent); box-shadow: inset 0 1px 0 var(--glass-edge); transition: background 0.2s, height 0.2s; }
+.pt-dial-step.on i { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.pt-dial-step[aria-checked='true'] i { background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 60%), var(--accent); }
+.pt-dial-step span { font-family: var(--font-mono); font-size: 0.75rem; text-align: center; }
+.pt-dial-step[aria-checked='true'] span { color: var(--ink); font-weight: 700; }
+.pt-dial-ends { display: flex; justify-content: space-between; }
+.pt-dial-now { margin-top: 10px; }
+.pt-dial-now strong { display: block; margin-bottom: 2px; }
+
+.pt-controls { border-radius: var(--radius-card); overflow: hidden; }
+.pt-controls-toggle {
+  display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; padding: 12px 16px;
+  background: none; border: 0; text-align: left; color: inherit;
+}
+.pt-controls-toggle svg { flex-shrink: 0; transition: transform 0.2s; color: var(--ink-2); }
+.pt-controls-toggle[aria-expanded='true'] svg { transform: rotate(180deg); }
+.pt-controls-body { padding: 4px 16px 16px; border-top: 1px solid var(--line); }
+.pt-controls-body .segmented { background: var(--glass-inner); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 1px 0 var(--glass-edge); }
+.pt-ctl { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.pt-ctl > span { font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+
+.pt-card { border-top: 4px solid var(--accent); border-radius: var(--radius-card); padding: 20px 20px 18px; }
+.pt-card.done { border-top-color: var(--ink-3); }
+.pt-text { font-size: clamp(1.5rem, 6.2vw, 2.05rem); line-height: 1.16; margin: 14px 0 16px; }
+.pt-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.pt-meta > span { display: inline-flex; align-items: center; gap: 5px; }
+.pt-invite { display: flex; gap: 8px; align-items: flex-start; margin: 14px 0 0; padding: 10px 12px; border-radius: var(--radius-ctl); background: var(--accent-soft); color: var(--ink); }
+.pt-invite svg { color: var(--accent-text); flex-shrink: 0; margin-top: 2px; }
+.pt-origin { margin: 14px 0 0; }
+
+.pt-actions { display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; }
+@media (max-width: 359px) { .pt-actions { grid-template-columns: 1fr 1fr; } .pt-actions > :first-child { grid-column: 1 / -1; } }
+.pt-hint { text-align: center; margin: 0; }
+
+.pt-pending {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; color: inherit; font: inherit;
+  padding: 12px 14px; border-radius: var(--radius-card); margin-top: 16px;
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), color-mix(in srgb, var(--accent) 16%, var(--glass-fill));
+  transition: transform 0.15s ease;
+}
+.pt-pending:active { transform: scale(0.98); }
+.pt-pending svg { color: var(--accent-text); flex-shrink: 0; }
+/* Destructive action sitting on the art: red text on clear glass measured 1.8–3.2:1 in day, so the label uses a deep
+   danger ink and the panel takes the text-dense frost; the red rim and icon still mark it as destructive. */
+.btn.danger.pt-danger {
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), var(--glass-strong);
+  color: color-mix(in srgb, var(--danger) 55%, var(--ink));
+  border-color: color-mix(in srgb, var(--danger) 50%, var(--glass-border));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+}
+.btn.danger.pt-danger svg { color: var(--danger); }
+
+.pt-capture { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pt-excerpt { display: block; margin-top: 4px; font-style: italic; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pt-reflection { white-space: pre-wrap; margin: 8px 0 0; }
+
+.pt-stars { display: flex; gap: 4px; }
+.pt-star { width: 44px; height: 44px; display: grid; place-items: center; border: 0; background: none; color: var(--ink-3); border-radius: 50%; transition: transform 0.15s ease; }
+.pt-star.on { color: var(--accent); }
+.pt-star:active { background: var(--glass-inner); transform: scale(0.92); }
+
+.pt-sheet-section { margin-bottom: 16px; }
+.pt-sheet-section > .label { display: block; margin-bottom: 8px; }

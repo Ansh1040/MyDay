@@ -1,0 +1,256 @@
+/* Glass material layer for Elsewhere (loaded after base.css).
+   Balance: mostly clear, softly frosted glass panels (≈75%) + Liquid Glass reserved for navigation,
+   key buttons, active tabs and small controls (≈25%). Tokens live in themes.css.
+
+   Reuse in area stylesheets:
+     .glass          main panel (blur + clear fill + reflective rim)
+     .glass-strong   text-dense panel (more frost)
+     .glass-inner    nested element inside a panel (no extra blur)
+     .liquid         small interactive control with liquid highlights
+     .on-art         local glass backing for short text that sits directly on the artwork */
+
+/* ---------- The scene: theme artwork behind everything ---------- */
+body { background: var(--bg); }
+.scene { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: var(--bg); pointer-events: none; }
+.scene-fill,
+.scene-art { position: absolute; inset: 0; background-image: var(--scene-image); background-repeat: no-repeat; }
+.scene-fill { display: none; }
+.scene-art { background-size: cover; background-position: var(--scene-pos); transition: opacity .5s ease; }
+.scene-veil { position: absolute; inset: 0; background: var(--scene-veil); transition: background .4s ease; }
+html[data-mode='dark'] .scene-art { filter: saturate(.92) brightness(.92); }
+/* Wide screens: show the whole portrait artwork (no heavy crop) over a soft extension of itself. */
+@media (min-aspect-ratio: 4/5) {
+  .scene-fill { display: block; background-size: cover; background-position: center; filter: blur(34px) saturate(1.1); transform: scale(1.15); opacity: .9; }
+  .scene-art { background-size: contain; background-position: center; }
+}
+
+/* ---------- Glass panels ---------- */
+.glass,
+.card,
+.list,
+.banner,
+.empty,
+.large-title,
+.toast,
+.search,
+.input, .textarea, .select,
+.segmented {
+  background:
+    linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%),
+    var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px rgba(255, 255, 255, 0.04), var(--glass-shadow);
+}
+.glass-strong,
+.sheet,
+.input, .textarea, .select,
+.toast {
+  background:
+    linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%),
+    var(--glass-strong);
+}
+.glass-inner { background: var(--glass-inner); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--glass-edge); }
+/* Text-dense reading areas get local frost so detailed artwork never fights the words. */
+.prose { background: var(--glass-strong); border-radius: var(--radius-ctl); padding: 16px 18px; -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur)); }
+.card .prose, .sheet .prose, .glass .prose, .glass-strong .prose { background: transparent; padding: 0; -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* Nested panels don't need a second blur (cheaper, and avoids a milky look). */
+.card .card, .card .list, .list .card, .sheet .card, .sheet .list, .card .banner, .sheet .banner, .card .segmented, .sheet .segmented,
+.card .input, .card .textarea, .card .select, .sheet .input, .sheet .textarea, .sheet .select, .card .search, .sheet .search {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--glass-inner);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.list-row { border-bottom-color: var(--line); }
+.card.flat { background: var(--glass-inner); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.card.tinted { background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), color-mix(in srgb, var(--accent) 16%, var(--glass-fill)); border-color: var(--glass-border); }
+.card.inverse {
+  background: linear-gradient(155deg, rgba(255, 255, 255, 0.14) 0%, transparent 45%), color-mix(in srgb, var(--ink) 78%, transparent);
+  color: var(--bg);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.empty { border-radius: var(--radius-card); }
+.divider, hr { background: var(--line); }
+
+/* Heading & introduction panels */
+.large-title {
+  width: calc(100% - 32px); max-width: 688px; margin: 6px auto 4px; padding: 20px 20px 18px; border-radius: var(--radius-card);
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%), color-mix(in srgb, var(--glass-fill) 50%, var(--glass-strong));
+}
+@media (min-width: 752px) { .large-title { width: 100%; } }
+
+/* Short text sitting directly on the artwork (section labels, captions) gets a small glass backing. */
+.section-head > .label,
+.section-head > h2,
+.on-art {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--radius-pill);
+  background: var(--glass-strong); border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.section-head > .label { color: var(--ink-2); }
+
+/* ---------- Header ---------- */
+.navbar { background: transparent; border-bottom: 1px solid transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.navbar.scrolled, .navbar.always {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent), var(--glass-fill);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border-bottom-color: var(--glass-border);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+/* Night: more frost behind the app-bar title (it was 3.3–4.1:1 over bright art). */
+html[data-mode='dark'] .navbar.scrolled, html[data-mode='dark'] .navbar.always {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent), color-mix(in srgb, var(--glass-strong) 75%, var(--glass-fill));
+}
+/* Inside a blurred app bar the buttons don't need a second blur. */
+.navbar.scrolled .icon-btn, .navbar.always .icon-btn { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.navbar .icon-btn { background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: inset 0 1px 0 var(--liquid-hi), 0 2px 8px rgba(0, 0, 0, 0.08); -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat)); backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat)); }
+.navbar .navbar-side { gap: 6px; }
+.navbar-title { color: var(--ink); }
+
+/* ---------- Liquid Glass: navigation, key buttons, active states, small controls ---------- */
+.liquid,
+.tabbar,
+.btn.primary,
+.btn.secondary,
+.btn.soft,
+.icon-btn.filled,
+.chip,
+.segmented button[aria-pressed='true'],
+.timer-pill,
+.switch .thumb {
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    inset 0 1px 1px var(--liquid-hi),
+    inset 0 -1px 1px var(--liquid-lo),
+    inset 0 0 14px rgba(255, 255, 255, 0.12),
+    0 6px 18px rgba(0, 0, 0, 0.12);
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat)) brightness(1.04);
+  backdrop-filter: blur(var(--liquid-blur)) saturate(var(--liquid-sat)) brightness(1.04);
+}
+.btn.secondary, .icon-btn.filled, .chip, .liquid {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.06) 55%, rgba(255, 255, 255, 0.14)), var(--glass-inner);
+  color: var(--ink);
+}
+html[data-mode='dark'] .btn.secondary, html[data-mode='dark'] .icon-btn.filled, html[data-mode='dark'] .chip:not([aria-pressed='true']), html[data-mode='dark'] .liquid {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02) 55%, rgba(255, 255, 255, 0.05)), var(--glass-inner);
+}
+.chip { color: var(--ink-2); }
+.btn.primary {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.38), rgba(255, 255, 255, 0) 52%), color-mix(in srgb, var(--accent) 92%, transparent);
+  color: var(--accent-ink);
+  border-color: color-mix(in srgb, var(--accent) 50%, rgba(255, 255, 255, 0.6));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.6), inset 0 -2px 4px rgba(0, 0, 0, 0.14), 0 8px 22px color-mix(in srgb, var(--accent) 34%, transparent);
+}
+/* Day: white label on the accent needs a deeper fill (Vermilion/Graphite accents alone are ~4:1) and a shorter sheen. */
+html[data-mode='light'] .btn.primary,
+html[data-mode='light'] .chip.accent[aria-pressed='true'] {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0) 45%), color-mix(in srgb, color-mix(in srgb, var(--accent) 72%, var(--accent-text)) 94%, transparent);
+}
+.btn.soft { background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%), var(--accent-soft); color: var(--accent-text); }
+/* Day: soft and danger buttons get a firmer backing so their coloured labels stay ≥4.5:1 over dark parts of the art. */
+html[data-mode='light'] .btn.soft { background: linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 55%), color-mix(in srgb, var(--accent) 14%, var(--glass-strong)); }
+/* Night: the white day sheen sits under light labels, so pressed segments and soft buttons use the night sheen. */
+html[data-mode='dark'] .segmented button[aria-pressed='true'] { background: linear-gradient(180deg, var(--glass-sheen), transparent), var(--glass-strong); }
+html[data-mode='dark'] .btn.soft { background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), var(--accent-soft); }
+html[data-mode='light'] .btn.danger { background: var(--glass-strong); color: color-mix(in srgb, var(--danger) 82%, var(--ink)); }
+.btn.dark { background: color-mix(in srgb, var(--ink) 86%, transparent); color: var(--bg); box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 6px 18px rgba(0, 0, 0, 0.18); }
+.btn.ghost { background: transparent; }
+.btn.danger { background: var(--glass-inner); }
+.chip[aria-pressed='true'] {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%), color-mix(in srgb, var(--ink) 88%, transparent);
+  color: var(--bg);
+  border-color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+.chip.accent[aria-pressed='true'] { background: linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 55%), var(--accent); color: var(--accent-ink); }
+.segmented { padding: 4px; }
+.segmented button[aria-pressed='true'] { background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.1)), var(--glass-strong); color: var(--ink); }
+.switch .track { background: color-mix(in srgb, var(--ink) 22%, var(--glass-inner)); border: 1px solid color-mix(in srgb, var(--ink) 28%, transparent); }
+.switch input:checked ~ .track { background: var(--accent); }
+.switch .thumb { background: linear-gradient(180deg, #fff, #f1f1f1); }
+.progress { background: var(--glass-inner); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08); }
+.progress > i { background: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 60%), var(--accent); }
+.tag { background: var(--glass-inner); color: var(--ink-2); border: 1px solid var(--glass-border); }
+.tag.accent { background: var(--accent-soft); color: var(--accent-text); }
+
+/* Floating glass navigation (mobile): a liquid pill with a lens on the active tab */
+.tabbar {
+  left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 6px; border-radius: 28px;
+  max-width: 520px; margin: 0 auto;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.06) 60%), var(--glass-fill);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo), 0 14px 40px rgba(0, 0, 0, 0.22);
+}
+html[data-mode='light'] .tabbar { background: linear-gradient(180deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.06) 60%), color-mix(in srgb, var(--glass-fill) 45%, var(--glass-strong)); }
+html[data-mode='dark'] .tabbar { background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 60%), var(--glass-strong); }
+.tabbar-inner { gap: 4px; }
+.tab { min-height: 54px; border-radius: 22px; color: var(--ink-2); position: relative; transition: color .2s ease, transform .15s ease; }
+.tab:active { transform: scale(.96); }
+.tab[aria-current='page'] {
+  color: var(--ink);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.12) 60%), var(--glass-inner);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo), 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+html[data-mode='dark'] .tab[aria-current='page'] { background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.04) 60%), var(--glass-inner); }
+.tab[aria-current='page'] .tab-dot { background: var(--accent); }
+.timer-dock { bottom: calc(92px + env(safe-area-inset-bottom)); }
+.toast-host { bottom: calc(96px + env(safe-area-inset-bottom)); }
+.timer-pill { background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 60%), color-mix(in srgb, var(--ink) 84%, transparent); color: var(--bg); }
+
+/* Larger screens: the rail becomes a floating glass panel */
+@media (min-width: 900px) {
+  .tabbar { position: sticky; top: 16px; left: auto; right: auto; bottom: auto; margin: 16px 0 16px 16px; height: calc(100dvh - 32px); width: 228px; border-radius: 28px; padding: 22px 12px; }
+  .tab { border-radius: 16px; }
+  .timer-dock { bottom: 24px !important; left: 260px !important; }
+  .toast-host { bottom: 24px; left: 244px; }
+}
+
+/* Sheets & dialogs */
+.scrim { background: rgba(10, 8, 12, 0.32); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.sheet { border: 1px solid var(--glass-border); border-bottom: 0; box-shadow: inset 0 1px 0 var(--glass-edge), 0 -10px 40px rgba(0, 0, 0, 0.22); -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); }
+.sheet-grip { background: color-mix(in srgb, var(--ink) 25%, transparent); }
+
+/* Toasts keep enough frost to stay readable over anything */
+.toast { color: var(--ink); }
+.toast .btn { color: var(--accent-text); }
+.toast.error { background: color-mix(in srgb, var(--danger) 88%, transparent); color: #fff; }
+
+/* Gentle hover / press (pointer devices only) */
+@media (hover: hover) and (pointer: fine) {
+  .card-tap:hover, .btn:hover, .chip:hover, .icon-btn:hover { filter: brightness(1.04); }
+  .btn.primary:hover, .btn.secondary:hover { transform: translateY(-1px); }
+  .card:has(> .card-tap:hover) { box-shadow: inset 0 1px 0 var(--glass-edge), 0 16px 38px rgba(0, 0, 0, 0.18); }
+}
+.card { transition: box-shadow .25s ease, transform .2s ease; }
+
+/* ---------- Fallbacks: no backdrop blur, or reduced transparency requested ---------- */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root, html[data-theme][data-mode] { --glass-fill: var(--glass-solid); --glass-strong: var(--glass-solid); --glass-inner: var(--glass-solid); --surface: var(--glass-solid); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root, html[data-theme][data-mode] { --glass-fill: var(--glass-solid); --glass-strong: var(--glass-solid); --glass-inner: var(--glass-solid); --surface: var(--glass-solid); --surface-2: var(--glass-solid); }
+  .glass, .card, .list, .banner, .empty, .large-title, .toast, .search, .input, .textarea, .select, .segmented, .sheet, .tabbar, .navbar, .prose, .liquid, .chip, .btn, .icon-btn, .on-art, .section-head > .label {
+    -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  }
+}
+html[data-transparency='reduce'], html[data-transparency='reduce'][data-theme][data-mode] {
+  --glass-fill: var(--glass-solid); --glass-strong: var(--glass-solid); --glass-inner: var(--glass-solid); --surface: var(--glass-solid); --surface-2: var(--glass-solid);
+}
+html[data-transparency='reduce'] * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+
+/* Sculptural glass artwork in discovery cards */
+.exp-card { overflow: hidden; isolation: isolate; }
+.exp-card > *:not(.card-art) { position: relative; z-index: 1; }
+.card-art { position: absolute; top: -6px; right: -8px; z-index: 0; opacity: .95; pointer-events: none; }
+.exp-card-standard .card-tap h3, .exp-card-inverse .card-tap h3 { padding-right: 56px; }
+.exp-card-feature { min-height: 200px; }
+.exp-card-feature .card-tap h3 { padding-right: 92px; }
+.exp-card-feature .card-art { top: 8px; right: 6px; }
+html[data-motion='full'] .exp-card:hover .card-art { transform: rotate(-4deg) scale(1.04); transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+
+/* Swipe reveal: frost the revealed action while a card is being swiped (only then, to keep lists cheap). */
+.swipe-under.active { -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat)); border-radius: var(--radius-card); }

@@ -1,0 +1,246 @@
+/* Index themes — four palettes × day/night, each over its own artwork.
+   html[data-theme] + html[data-mode] are set by src/lib/theme.ts.
+   Components must only use these tokens (never raw colours) so every theme stays consistent.
+
+   Glass system (see glass.css):
+   --glass-fill        main panels: clear glass (≈25% day white / ≈24% night tint), tuned per artwork for readability
+   --glass-strong      text-dense areas (prose, inputs, dialogs): more frost, still translucent
+   --glass-inner       nested elements inside a panel (no extra blur needed)
+   --glass-solid       opaque fallback when backdrop blur is unsupported or reduced transparency is requested
+   --glass-border / --glass-edge / --glass-shadow   reflective rim, inset highlight, soft depth
+   --scene-image / --scene-pos / --scene-veil       the theme's artwork, focal point, and day/night veil */
+
+:root {
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, 'Cascadia Code', Consolas, monospace;
+  --font-label: var(--font-body);
+  --display-weight: 560;
+  --display-style: normal;
+  --display-tracking: -0.02em;
+  --label-transform: uppercase;
+  --label-tracking: 0.08em;
+  --label-size: 0.7rem;
+  --radius-card: 22px;
+  --radius-ctl: 14px;
+  --radius-pill: 999px;
+  --success: #1f6b3e;
+  --warning: #8a5408;
+  --danger: #b4261b;
+
+  --glass-blur: 14px;
+  --glass-sat: 1.35;
+  --liquid-blur: 10px;
+  --liquid-sat: 1.8;
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-edge: rgba(255, 255, 255, 0.75);
+  --glass-sheen: rgba(255, 255, 255, 0.28);
+  --glass-shadow: 0 10px 30px rgba(20, 12, 8, 0.14), 0 1px 3px rgba(20, 12, 8, 0.08);
+  --liquid-hi: rgba(255, 255, 255, 0.85);
+  --liquid-lo: rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- Vermilion: warm ivory + tomato red · red blossoms against an orange-red sun ---------- */
+html[data-theme='vermilion'] {
+  --scene-image: url('../assets/backgrounds/vermilion.jpg');
+  --scene-pos: 50% 28%;
+  --scene-veil: rgba(255, 248, 238, 0.2);
+  --bg: #f4ead9;
+  --surface: rgba(255, 250, 243, 0.42);
+  --surface-2: rgba(255, 244, 232, 0.5);
+  --glass-fill: rgba(255, 250, 243, 0.3);
+  --glass-strong: rgba(255, 250, 243, 0.64);
+  --glass-inner: rgba(255, 252, 247, 0.38);
+  --glass-solid: #fbf4ea;
+  --ink: #1b1511;
+  --ink-2: #3d332b;
+  --ink-3: #5c5045;
+  --line: rgba(60, 38, 24, 0.16);
+  --accent: #d9431b;
+  --accent-text: #731e08;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(228, 87, 46, 0.18);
+  --focus: #b8401f;
+  --display-weight: 600;
+}
+html[data-theme='vermilion'][data-mode='dark'] {
+  --scene-veil: linear-gradient(rgba(14, 7, 4, 0.64), rgba(14, 7, 4, 0.72));
+  --bg: #1a120e;
+  --surface: rgba(30, 18, 12, 0.42);
+  --surface-2: rgba(44, 28, 20, 0.5);
+  --glass-fill: rgba(26, 15, 10, 0.26);
+  --glass-strong: rgba(24, 14, 10, 0.6);
+  --glass-inner: rgba(36, 22, 15, 0.38);
+  --glass-solid: #221813;
+  --ink: #fbf3e9;
+  --ink-2: #e2d4c3;
+  --ink-3: #c2b19d;
+  --line: rgba(255, 230, 210, 0.16);
+  --accent: #ff7a50;
+  --accent-text: #ffab8c;
+  --accent-ink: #1e0d06;
+  --accent-soft: rgba(255, 122, 80, 0.22);
+  --focus: #ff9472;
+}
+
+/* ---------- Cobalt: cool white + blue · blue and white blossoms on deep blue ---------- */
+html[data-theme='cobalt'] {
+  --font-display: 'Inter Variable', system-ui, sans-serif;
+  --display-weight: 780;
+  --display-tracking: -0.035em;
+  --scene-image: url('../assets/backgrounds/cobalt.jpg');
+  --scene-pos: 50% 40%;
+  /* The artwork is dark: a light day veil keeps it recognisable while dark text stays readable on glass. */
+  --scene-veil: rgba(226, 236, 255, 0.34);
+  --bg: #dfe8f7;
+  --surface: rgba(246, 249, 255, 0.55);
+  --surface-2: rgba(232, 240, 253, 0.6);
+  --glass-fill: rgba(246, 249, 255, 0.46);
+  --glass-strong: rgba(248, 250, 255, 0.72);
+  --glass-inner: rgba(255, 255, 255, 0.45);
+  --glass-solid: #f4f7fd;
+  --ink: #0b1424;
+  --ink-2: #26344d;
+  --ink-3: #42526e;
+  --line: rgba(14, 30, 70, 0.16);
+  --accent: #2350e6;
+  --accent-text: #1638a8;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(35, 80, 230, 0.16);
+  --focus: #1d44c8;
+  --radius-card: 20px;
+}
+html[data-theme='cobalt'][data-mode='dark'] {
+  --scene-veil: linear-gradient(rgba(2, 6, 18, 0.4), rgba(2, 6, 18, 0.5));
+  --bg: #08101f;
+  --surface: rgba(10, 18, 40, 0.42);
+  --surface-2: rgba(20, 32, 62, 0.5);
+  --glass-fill: rgba(8, 15, 34, 0.26);
+  --glass-strong: rgba(8, 14, 32, 0.6);
+  --glass-inner: rgba(16, 26, 52, 0.4);
+  --glass-solid: #111a2e;
+  --ink: #eef3fc;
+  --ink-2: #c8d4e8;
+  --ink-3: #a3b1ca;
+  --line: rgba(190, 210, 255, 0.16);
+  --accent: #7d97ff;
+  --accent-text: #a9bcff;
+  --accent-ink: #050b1f;
+  --accent-soft: rgba(109, 139, 255, 0.22);
+  --focus: #a9bcff;
+}
+
+/* ---------- Plum: warm neutrals + berry · pink blossoms, pagodas, misty mountains ---------- */
+html[data-theme='plum'] {
+  --display-style: italic;
+  --display-weight: 480;
+  --display-tracking: -0.01em;
+  --label-transform: none;
+  --label-tracking: 0.01em;
+  --label-size: 0.78rem;
+  --scene-image: url('../assets/backgrounds/plum.jpg');
+  --scene-pos: 30% 42%;
+  --scene-veil: rgba(255, 244, 248, 0.2);
+  --bg: #f1dfe3;
+  --surface: rgba(255, 247, 250, 0.44);
+  --surface-2: rgba(252, 236, 242, 0.52);
+  --glass-fill: rgba(255, 247, 250, 0.4);
+  --glass-strong: rgba(255, 248, 251, 0.72);
+  --glass-inner: rgba(255, 250, 252, 0.4);
+  --glass-solid: #fbf3f5;
+  --ink: #1f1219;
+  --ink-2: #402b37;
+  --ink-3: #5e4655;
+  --line: rgba(80, 30, 55, 0.16);
+  --accent: #8e2c5c;
+  --accent-text: #6e1a43;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(142, 44, 92, 0.16);
+  --focus: #8e2c5c;
+  --radius-card: 26px;
+}
+html[data-theme='plum'][data-mode='dark'] {
+  --scene-veil: linear-gradient(rgba(12, 4, 12, 0.56), rgba(12, 4, 12, 0.66));
+  --bg: #170d16;
+  --surface: rgba(30, 14, 28, 0.42);
+  --surface-2: rgba(46, 24, 42, 0.5);
+  --glass-fill: rgba(26, 11, 24, 0.26);
+  --glass-strong: rgba(24, 10, 22, 0.6);
+  --glass-inner: rgba(40, 18, 36, 0.4);
+  --glass-solid: #221520;
+  --ink: #f9eef4;
+  --ink-2: #e2cfda;
+  --ink-3: #c4adbb;
+  --line: rgba(255, 210, 235, 0.16);
+  --accent: #ef8bb9;
+  --accent-text: #f7b4d2;
+  --accent-ink: #26081a;
+  --accent-soft: rgba(224, 122, 170, 0.22);
+  --focus: #f7b4d2;
+}
+
+/* ---------- Graphite: minimal monochrome + burnt orange · illustrated grey street, blue sky ---------- */
+html[data-theme='graphite'] {
+  --font-display: 'Inter Variable', system-ui, sans-serif;
+  --font-label: var(--font-mono);
+  --display-weight: 650;
+  --display-tracking: -0.03em;
+  --label-size: 0.68rem;
+  --label-tracking: 0.06em;
+  --scene-image: url('../assets/backgrounds/graphite.jpg');
+  --scene-pos: 50% 30%;
+  --scene-veil: rgba(250, 250, 248, 0.2);
+  --bg: #e4e4e1;
+  --surface: rgba(255, 255, 255, 0.44);
+  --surface-2: rgba(240, 240, 238, 0.52);
+  --glass-fill: rgba(255, 255, 255, 0.3);
+  --glass-strong: rgba(255, 255, 255, 0.66);
+  --glass-inner: rgba(255, 255, 255, 0.4);
+  --glass-solid: #f6f6f4;
+  --ink: #0d0d0d;
+  --ink-2: #2e2e2e;
+  --ink-3: #4b4b4b;
+  --line: rgba(0, 0, 0, 0.14);
+  --accent: #c2531a;
+  --accent-text: #7c3009;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(194, 83, 26, 0.14);
+  --focus: #111111;
+  --radius-card: 12px;
+  --radius-ctl: 8px;
+}
+html[data-theme='graphite'][data-mode='dark'] {
+  --scene-veil: linear-gradient(rgba(4, 5, 7, 0.62), rgba(4, 5, 7, 0.72));
+  --bg: #0f0f0f;
+  --surface: rgba(18, 18, 18, 0.42);
+  --surface-2: rgba(34, 34, 34, 0.5);
+  --glass-fill: rgba(14, 14, 14, 0.26);
+  --glass-strong: rgba(12, 12, 12, 0.62);
+  --glass-inner: rgba(30, 30, 30, 0.4);
+  --glass-solid: #1b1b1b;
+  --ink: #f2f2f2;
+  --ink-2: #d2d2d2;
+  --ink-3: #ababab;
+  --line: rgba(255, 255, 255, 0.14);
+  --accent: #f07a3a;
+  --accent-text: #ffa070;
+  --accent-ink: #160800;
+  --accent-soft: rgba(240, 122, 58, 0.2);
+  --focus: #f2f2f2;
+}
+
+html[data-mode='dark'] {
+  color-scheme: dark;
+  --success: #6fd49c;
+  --warning: #f0b55a;
+  --danger: #ff8278;
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-edge: rgba(255, 255, 255, 0.22);
+  --glass-sheen: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 12px 34px rgba(0, 0, 0, 0.34), 0 1px 3px rgba(0, 0, 0, 0.3);
+  --liquid-hi: rgba(255, 255, 255, 0.34);
+  --liquid-lo: rgba(0, 0, 0, 0.3);
+}
+html[data-mode='light'] {
+  color-scheme: light;
+}

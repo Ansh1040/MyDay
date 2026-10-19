@@ -1,20 +1,101 @@
-# Elsewhere — interactive browser prototype
+# Elsewhere
 
-A mobile-first, buildless prototype of Elsewhere's Index direction, with Vermilion, Cobalt, Plum, and Graphite themes in day, night, and system modes.
+A personal discovery app for exploring curiosity, breaking routines, developing skills, creating things, and seeing how you change over time.
 
-Serve `dist/` with any static HTTP server. No dependencies or compilation are required.
+> The repository is called `MyDay` for historical reasons. The product is **Elsewhere**; the earlier MyDay productivity-dashboard idea was discarded.
 
-## Included
+**Four core areas:** Rabbit Hole · Plot Twist · Skill Arcade · Version History
+**Also:** Curiosity Map · Remix Studio · Personal Capsules · Surprise Dial · Experience Builder · Field Notes · Two-Person Quests · Return Tickets · Perspective Switch · Personal Collections
 
-- Responsive discovery feed, search, topic filters, bookmarks, collections, and surprise dial.
-- Rabbit Hole memory experiment, audio comparison, quiz, and compounding simulation.
-- Plot Twist solo and in-person two-person quests; Skill Arcade projects.
-- Reflections, field notes, Version History, custom experience builder, manual remixing, return tickets, and date-gated capsules.
-- Curiosity connection view, accurate deadline-based session timer, contextual foreground notification permission, fullscreen where supported, and discovery-tab swipe gestures.
-- Browser-local persistence and JSON backup export/restore.
+**Navigation:** Discover · Journeys · Create · You
+**Design:** the "Index" editorial layout, rendered as clear, softly frosted glass floating over each theme's artwork. Liquid Glass highlights are reserved for navigation, key buttons, active tabs and small controls. There are four themes, each with day, night and automatic (follows the device) appearance, and each with its own background artwork:
 
-## Prototype boundaries
+| Theme | Artwork |
+|---|---|
+| Vermilion | red blossoms against an orange-red sun |
+| Cobalt | blue and white blossoms on deep blue |
+| Plum | pink blossoms, pagodas and misty mountains |
+| Graphite | an illustrated stone street under blue sky |
 
-This is not a native app or a finished service. No account, cloud sync, AI generation, scheduled background push, remote collaboration, media upload/recording, or encrypted capsule storage is connected. Timer notifications require browser support, permission, and an open page. Collections, notes, and progress remain on the current browser. The Curiosity Map shows explicit saved/completed topic associations, not inferred personal insights. Online component/template references informed the Index direction; this implementation is original HTML/CSS/JavaScript rather than a copied template. Fonts use Google Fonts with local fallbacks.
+Night mode darkens the artwork without hiding it. Panels switch to solid when the device asks for reduced transparency, when backdrop blur isn't supported, or when **Settings → Appearance → Reduce transparency** is on. Design rules: [`docs/GLASS.md`](docs/GLASS.md).
 
-The original GitHub repository was named MyDay; Elsewhere is the chosen product.
+## Platforms
+
+| Platform | Status |
+|---|---|
+| **Android app (APK)** | Built with Capacitor 8. The web app runs inside a native Android shell, with native local notifications, the share sheet, file saving and the hardware back button. |
+| **Installable web app (PWA)** | Works in Chrome, Edge and Safari on phones and computers, with offline support through a service worker. |
+| iOS native app | **Not implemented.** On iPhone, use the web app via Safari → Share → Add to Home Screen. |
+
+## Install & open
+
+### Android (APK)
+1. Copy `Elsewhere-debug.apk` to the phone.
+2. Open it, and allow "Install unknown apps" for the app you opened it with (Files, Chrome, …) when Android asks.
+3. Open **Elsewhere**.
+
+The APK is a debug build, signed with the Android debug key. That's fine for personal use, but it isn't a Play Store release.
+
+### Web app
+```bash
+npm install
+npm run build
+npx vite preview --port 4180      # open http://127.0.0.1:4180
+```
+To host it, deploy the `www/` folder to any static host; it uses relative paths and hash routing, so any sub-path works. Then use the browser's **Install app** / **Add to Home Screen**. Inside the app, **You → Install Elsewhere** shows platform-specific steps.
+
+### Build the APK yourself
+Requirements: JDK 21, Android SDK (platform 36 is fetched automatically), Node 20+.
+```bash
+npm install
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug     # → android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+## Development
+```bash
+npm run dev          # Vite dev server
+npm run typecheck    # tsc -b
+node scripts/smoke.mjs   # after `npx vite preview --port 4180`: visits every route in local Chrome and reports errors
+```
+Architecture and contributor rules: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Product requirements: [`docs/PRODUCT_BRIEF.md`](docs/PRODUCT_BRIEF.md).
+
+**Adding a new experience format:** write a Player component (see `src/formats/registry.ts`), then register it in `src/formats/index.ts` and `src/formats/meta.ts`. Unknown formats fall back to the step-by-step player, so imported or older content never breaks.
+
+## How suggestions work
+- **Curated:** all bundled content (experiences, rabbit holes, skills, Plot Twist templates, perspectives, quest templates) was written for the app and ships with it, so it works offline.
+- **Rule-based:** the For You ranking, Surprise Me and Plot Twist selection use transparent rules over your onboarding answers, the Surprise Dial, and your More / Less / Hide feedback. "Why am I seeing this?" shows the reasons.
+- **Template-generated:** Remix Studio builds new experiences from templates on your device.
+- **No AI and no tracking.** Nothing is generated by a language model, and there are no analytics.
+
+## Data, privacy & sharing
+- Everything is stored **only on your device** (IndexedDB). There are no accounts and no cloud sync.
+- **Export / import:** You → Settings → Your data exports a JSON file, with or without media, and can leave out private entries. Import merges into or replaces your data.
+- **Sharing (Two-Person Quests, shared experiences):** these work without a server. The app creates a share code that you send through any messaging app. The other person pastes it into **You → Import** and later sends a reply code back. Nothing syncs automatically.
+
+## Notifications
+| Kind | Android app | Web / PWA |
+|---|---|---|
+| Timer finished | ✅ scheduled natively, fires even if the app is closed | only while the app is open or in a background tab |
+| Your reminders (time + weekdays) | ✅ weekly native schedule | only while the app is open |
+| Capsule ready to open | ✅ scheduled at the open date | shown when you next open the app on/after that date |
+| Return-ticket nudges | ✅ scheduled | only while the app is open |
+| Shared activity updates | when you import a reply code | when you import a reply code |
+
+Permission is requested only when you turn on something that needs it. Quiet hours hold back notifications shown while Elsewhere is running. On some Android phones, battery optimisation can delay scheduled notifications; set Elsewhere's battery usage to "Unrestricted" if reminders arrive late.
+
+## Not included
+- Accounts, cloud sync and real-time collaboration (sharing uses codes, as described above).
+- Push notifications from a server.
+- AI-generated content.
+- A native iOS app and a signed Play Store release build.
+
+## Earlier buildless prototype
+`dist/`, `.openai/hosting.json` and `check-browser.cjs` are the earlier buildless Elsewhere browser prototype from this repository's `main` branch. They are kept unchanged and still deploy as before. This app builds to `www/`, so the two never collide. A backup exported from the prototype (`elsewhere-backup.json`) can be imported here via **You → Settings → Your data**. Its notes, custom experiences, capsules, collections, theme and name carry over. Saves, completions and return tickets that point to the prototype's own built-in content are reported as skipped, since this app's catalog is different.
+
+## Credits & licences
+Background artworks: chosen by the owner from Pinterest links; rights belong to their original creators. They are included for this personal project and should not be redistributed without permission.
+
+React, Vite, zustand (MIT) · lucide-react icons (ISC) · Inter, Fraunces and JetBrains Mono fonts via Fontsource (SIL OFL) · Capacitor (MIT) · playwright-core (Apache-2.0, development only).
+The Index visual design is an original direction for Elsewhere. It borrows Framework7-style mobile interaction patterns (large titles, tab bar, bottom sheets, swipe actions), but no third-party templates or Framework7 code are used.

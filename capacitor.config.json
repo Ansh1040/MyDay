@@ -1,0 +1,9 @@
+{
+  "appId": "app.elsewhere.discovery",
+  "appName": "Elsewhere",
+  "webDir": "www",
+  "android": { "allowMixedContent": false },
+  "plugins": {
+    "LocalNotifications": { "iconColor": "#E4572E" }
+  }
+}

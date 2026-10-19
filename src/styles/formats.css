@@ -1,0 +1,454 @@
+/* Experience view + format players. Theme tokens only (see themes.css). Prefix: fx-
+
+   Glass layout (docs/GLASS.md): nothing in here sits directly on the artwork.
+   - Panels are `.glass fx-panel` (clear glass), or `.glass glass-strong fx-panel` for text-dense areas
+     (reading, code, results, canvas frames). The material comes from glass.css; this file adds layout.
+   - Everything nested inside a panel uses --glass-inner with no second backdrop blur.
+   - Selected options, active pads/tones and the tap target use Liquid Glass highlights (--liquid-hi / --liquid-lo).
+   - Canvases are drawn opaque with --glass-solid (kit.tsx `canvas`) inside a glass-strong frame. */
+
+/* ---------- panels ---------- */
+.fx-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 18px; border-radius: var(--radius-card); }
+.fx-panel > p, .fx-panel > figcaption { margin: 0; }
+p.fx-panel { display: block; margin: 0; } /* keeps inline runs (e.g. <strong>) on one line */
+@media (min-width: 640px) { .fx-panel { padding: 22px; } }
+
+/* Nested pieces: clear inner glass, no stacked blur (cheaper and avoids a milky look). */
+.fx-panel :is(.card, .list, .segmented, .input, .textarea, .select, .search, .empty) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--glass-inner);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+.fx-panel :is(.input, .textarea, .select):focus { box-shadow: 0 0 0 3px var(--accent-soft); }
+.fx-panel .banner { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 1px 0 var(--glass-edge); }
+.fx-panel .banner:not(.warn):not(.error):not(.ok) { background: var(--glass-inner); }
+.fx-panel .card { border-color: var(--glass-border); }
+/* Liquid controls inside a panel keep their highlights but not a second saturating blur: re-saturating the
+   already-blurred artwork (e.g. the red sun in Vermilion) is what made soft buttons hard to read. */
+.fx-panel :is(.btn, .chip, .icon-btn, .switch .thumb, .segmented button),
+.fx-view :is(.card, .list, .glass, .banner) :is(.btn, .chip, .icon-btn, .switch .thumb, .segmented button) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* Touch targets inside players: sliders and segmented options get the full 44px (shared defaults are 32px / 38px). */
+.fx-player input[type='range'].range { height: 44px; }
+.fx-player .segmented button { min-height: 44px; }
+.fx-panel .btn.soft { background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), color-mix(in srgb, var(--accent) 14%, var(--glass-strong)); }
+.fx-panel .btn.secondary, .fx-panel .icon-btn.filled { background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), var(--glass-strong); }
+
+/* Players are text-dense, so by day experience panels take the strong frost: clear --glass-fill could not hold 4.5:1
+   for small labels over the brightest (Vermilion's sun) or darkest (Plum's pagodas, Graphite's street) parts of the art.
+   Night panels sit a little above the clear fill. */
+html[data-mode='light'] .fx-view :is(.fx-panel.glass, .fx-guide.card, .fx-est.card, .fx-followups.glass, .fx-timer > .card, .fx-next .card, .fx-next .list) {
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%), var(--glass-strong);
+}
+html[data-mode='dark'] .fx-view :is(.fx-panel.glass, .fx-guide.card, .fx-est.card, .fx-followups.glass, .fx-timer > .card, .fx-next .card, .fx-next .list) {
+  background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 42%), color-mix(in srgb, var(--glass-strong) 45%, var(--glass-fill));
+}
+/* Faint helper text and labels in day panels sit a step closer to --ink-2 so tiny captions keep 4.5:1 over every artwork. */
+html[data-mode='light'] .fx-view { --fx-faint: color-mix(in srgb, var(--ink-3) 55%, var(--ink-2)); }
+html[data-mode='light'] .fx-view :is(.fx-panel, .card) :is(.faint, .label:not(.accent)) { color: var(--fx-faint); }
+/* The selected segment stays a dark lens at night (a bright highlight under light text dropped its contrast). */
+html[data-mode='dark'] .fx-view .segmented button[aria-pressed='true'] { background: linear-gradient(180deg, var(--glass-sheen), transparent 70%), color-mix(in srgb, var(--ink) 14%, var(--glass-strong)); }
+/* A pressed chip keeps its dark-on-light lens at night (glass.css's night chip background otherwise wins over it). */
+html[data-mode='dark'] .fx-view .chip[aria-pressed='true'] { background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), color-mix(in srgb, var(--ink) 88%, transparent); }
+
+/* Shared "active" Liquid Glass recipe for selected options and lit controls inside panels. */
+.fx-option.on, .fx-answer.picked, .fx-tone.on, .fx-swatch.on, .fx-stepdot.on, .fx-pad, .fx-tap {
+  box-shadow:
+    inset 0 1px 1px var(--liquid-hi),
+    inset 0 -1px 1px var(--liquid-lo),
+    0 4px 14px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+/* Short text that has to sit on the artwork gets a local pill backing (.on-art). */
+.fx-on-art { align-self: flex-start; }
+
+/* ---------- Experience view ---------- */
+.fx-view { padding-top: 6px; display: flex; flex-direction: column; gap: 14px; }
+/* The tab bar (and a running-timer pill) stay visible on immersive screens, so leave room to scroll content above them. */
+.fx-view { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
+@media (min-width: 900px) { .fx-view { padding-bottom: 72px; } }
+
+.fx-hero { gap: 12px; position: relative; overflow: hidden; isolation: isolate; padding-top: 20px; }
+.fx-hero-head { display: flow-root; }
+/* The sculpture nests in the panel's top-right corner; the kicker and title wrap around it. */
+.fx-hero-art { float: right; width: 96px; height: 96px; margin: -12px -10px 2px 10px; pointer-events: none; }
+@media (min-width: 640px) { .fx-hero-art { width: 124px; height: 124px; margin: -14px -12px 4px 16px; } }
+html[data-motion='full'] .fx-hero-art { animation: fx-art-in .7s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes fx-art-in { from { opacity: 0; transform: translateY(6px) rotate(-6deg) scale(.94); } }
+.fx-kicker { gap: 6px; margin-bottom: 10px; }
+.fx-title { font-size: clamp(2rem, 8vw, 3rem); line-height: 1.04; overflow-wrap: break-word; }
+.fx-summary { margin: 0; font-size: 1.12rem; line-height: 1.55; color: var(--ink-2); max-width: 60ch; }
+.fx-hero-meta { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px solid var(--line); }
+.fx-hero > p { margin: 0; }
+.fx-remix-note {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 10px 14px; text-align: left;
+  border-radius: var(--radius-ctl); border: 1px dashed var(--accent); background: var(--accent-soft); color: var(--accent-text); font-weight: 600; font-size: 0.9rem;
+}
+.fx-done-line { margin: 0; color: color-mix(in srgb, var(--success) 62%, var(--ink)); }
+.fx-timer, .fx-stage { min-width: 0; }
+
+.fx-guide { display: flex; flex-direction: column; gap: 12px; }
+.fx-guide .fx-step { gap: 10px; }
+.fx-guide-nav { gap: 6px; align-items: center; }
+
+.fx-next { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+.fx-next > .section { margin-top: 8px; }
+.fx-next-panel { gap: 4px; }
+.fx-next h2:focus { outline: none; }
+/* Keep the heading clear of the sticky app bar, and when it is revealed after finishing, leave the player's result
+   in view above it with the first "What next" tiles visible below it (the tab bar covers the bottom on phones). */
+.fx-next h2 { scroll-margin-top: calc(96px + env(safe-area-inset-top)); scroll-margin-bottom: calc(300px + env(safe-area-inset-bottom)); }
+.fx-next h2:focus-visible { outline: 2px solid var(--focus); }
+.fx-next-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+@media (min-width: 640px) { .fx-next-grid { grid-template-columns: repeat(3, 1fr); } }
+.fx-next-tile {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 112px; padding: 14px; text-align: left;
+  border-radius: calc(var(--radius-card) - 4px); border: 1px solid var(--glass-border); background: var(--glass-inner); color: var(--ink);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+  transition: transform .15s ease, border-color .15s, box-shadow .2s;
+}
+.fx-next-tile:active { transform: scale(.97); }
+@media (hover: hover) and (pointer: fine) {
+  .fx-next-tile:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--glass-border)); box-shadow: inset 0 1px 1px var(--liquid-hi), 0 8px 20px color-mix(in srgb, var(--ink) 12%, transparent); transform: translateY(-1px); }
+}
+.fx-next-icon { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); margin-bottom: 6px; }
+.fx-next-title { font-weight: 650; }
+.fx-next-sub { font-size: 0.8rem; color: var(--ink-2); line-height: 1.35; }
+.fx-followups { list-style: none; margin: 0; padding: 4px 16px; display: flex; flex-direction: column; border-radius: var(--radius-card); }
+.fx-followups li { display: flex; gap: 10px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.fx-followups li:last-child { border-bottom: 0; }
+.fx-followups li svg { flex-shrink: 0; margin-top: 3px; color: var(--accent-text); }
+
+/* ---------- shared player pieces ---------- */
+.fx-player { display: flex; flex-direction: column; gap: 14px; }
+.fx-block { display: flex; flex-direction: column; gap: 10px; }
+.fx-block-label { margin: 0; }
+.fx-block ul, .fx-block ol { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 6px; }
+.fx-field-label { font-size: 0.85rem; font-weight: 600; color: var(--ink-2); }
+.fx-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding-top: 2px; }
+.fx-nav.end { justify-content: flex-end; }
+.fx-nav.between { justify-content: space-between; }
+/* Status text takes the semantic colour pulled a step toward --ink (darker by day, lighter at night), so it keeps 4.5:1
+   on glass even where dark parts of the artwork (Plum's trees, Graphite's street) sit behind the panel. */
+.fx-error { color: color-mix(in srgb, var(--danger) 72%, var(--ink)); margin: 0; }
+.fx-ok { color: color-mix(in srgb, var(--success) 62%, var(--ink)); margin: 0; }
+.fx-slider { display: flex; flex-direction: column; gap: 4px; }
+.fx-slider-label { font-weight: 600; color: var(--ink); }
+.fx-sliders { display: flex; flex-direction: column; gap: 14px; }
+.fx-toggle-row { min-height: 44px; cursor: pointer; }
+.fx-volume { gap: 12px; align-items: center; }
+/* A prompt panel carries a slim accent rule on its left edge. */
+.fx-prompt { position: relative; gap: 8px; padding-left: 26px; }
+.fx-prompt::before { content: ''; position: absolute; left: 13px; top: 20px; bottom: 20px; width: 3px; border-radius: 3px; background: var(--accent); }
+.fx-prompt-text, .fx-prompt-text p { margin: 0; line-height: 1.3; }
+.fx-prompt-text p + p { margin-top: .6em; }
+.fx-result { gap: 8px; }
+html[data-mode] .fx-view .fx-result.fx-panel.glass { background: linear-gradient(155deg, var(--glass-sheen) 0%, transparent 45%), color-mix(in srgb, var(--accent) 12%, var(--glass-strong)); }
+.fx-result h2:focus { outline: none; }
+.fx-result p { margin: 0; }
+.fx-stage .fx-result { scroll-margin-top: calc(76px + env(safe-area-inset-top)); scroll-margin-bottom: calc(110px + env(safe-area-inset-bottom)); }
+.fx-mark { width: 26px; height: 26px; border-radius: 50%; display: inline-grid; place-items: center; flex-shrink: 0; background: var(--glass-inner); border: 1px solid var(--glass-border); color: var(--ink-2); }
+.fx-mark.ok { background: color-mix(in srgb, var(--success) 18%, var(--glass-inner)); color: var(--success); }
+.fx-mark.no { background: color-mix(in srgb, var(--danger) 14%, var(--glass-inner)); color: var(--danger); }
+.fx-mark.poll { background: var(--accent-soft); color: var(--accent-text); }
+.fx-spin { animation: fx-spin 1s linear infinite; }
+@keyframes fx-spin { to { transform: rotate(360deg); } }
+.fx-pre {
+  margin: 0 0 1em; padding: 12px 14px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.45; white-space: pre; overflow-x: auto; max-width: 100%;
+}
+.fx-dot-sm { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); display: block; }
+
+/* ---------- steps ---------- */
+.fx-steps { scroll-margin-top: calc(64px + env(safe-area-inset-top)); } /* step changes scroll here; clear the sticky app bar */
+.fx-steps-panel { gap: 16px; }
+.fx-steps-head { display: flex; flex-direction: column; gap: 10px; }
+.fx-stepper { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 0; padding: 0; }
+.fx-stepper.compact { justify-content: center; flex: 1; min-width: 0; }
+.fx-stepdot {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--glass-inner); color: var(--ink-2);
+  font-size: 0.8rem; font-weight: 650; font-variant-numeric: tabular-nums; display: grid; place-items: center; position: relative;
+}
+.fx-stepdot::after { content: ''; position: absolute; inset: -4px; } /* 44px touch target */
+.fx-stepdot.done { background: color-mix(in srgb, var(--ink) 12%, var(--glass-inner)); color: var(--ink); }
+.fx-stepdot.on { background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--ink) 88%, transparent); border-color: color-mix(in srgb, var(--ink) 60%, transparent); color: var(--bg); }
+.fx-step { display: flex; flex-direction: column; gap: 14px; }
+.fx-step h2:focus, .fx-step h3:focus { outline: none; }
+.fx-step-body p:last-child { margin-bottom: 0; }
+.fx-choices { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.fx-choices legend { margin-bottom: 8px; padding: 0; }
+.fx-option {
+  display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 12px 16px; cursor: pointer;
+  border: 1px solid var(--glass-border); border-radius: var(--radius-ctl); background: var(--glass-inner); font-weight: 550;
+  box-shadow: inset 0 1px 0 var(--glass-edge); transition: background .15s, border-color .15s;
+}
+.fx-option input { width: 18px; height: 18px; accent-color: var(--accent); margin: 0; flex-shrink: 0; }
+.fx-option.on {
+  border-color: var(--accent); color: var(--ink);
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--accent) 16%, var(--glass-inner));
+}
+.fx-option:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* ---------- media ---------- */
+.fx-media { display: flex; flex-direction: column; gap: 10px; }
+.fx-media label.btn { cursor: pointer; }
+.fx-media .is-busy { opacity: .6; pointer-events: none; }
+.fx-media label.btn:has(+ input:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
+.fx-photo { width: 100%; max-height: 360px; object-fit: contain; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); }
+.fx-audio { width: 100%; }
+
+/* ---------- sketch ---------- */
+.fx-sketch { display: flex; flex-direction: column; gap: 10px; }
+.fx-sketch-panel { gap: 14px; }
+.fx-sketch-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* Tool groups are small Liquid Glass pills; the chosen tool gets a lens. */
+.fx-swatches {
+  display: flex; gap: 2px; padding: 3px; border-radius: var(--radius-pill); border: 1px solid var(--glass-border);
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-inner);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 1px var(--liquid-lo);
+}
+.fx-swatch { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid transparent; background: transparent; color: var(--ink); display: grid; place-items: center; transition: background .15s, border-color .15s; }
+.fx-swatch.on { border-color: var(--ink); background: linear-gradient(180deg, var(--glass-sheen), transparent 70%), var(--glass-strong); }
+.fx-dot { width: 18px; height: 18px; border-radius: 50%; display: block; }
+.fx-dot.ink { background: var(--ink); }
+.fx-dot.accent { background: var(--accent); }
+.fx-size { border-radius: 50%; background: var(--ink); display: block; }
+/* Drawing paper: an opaque --glass-solid sheet behind the transparent canvas, so the artwork never shows through the
+   drawing. Saved PNGs are composited onto the same --glass-solid, so what you see is what gets saved. */
+.fx-sketch-surface {
+  position: relative; overflow: hidden; border-radius: calc(var(--radius-card) - 4px);
+  border: 1px solid var(--glass-border); background: var(--glass-solid); box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px color-mix(in srgb, var(--ink) 5%, transparent);
+}
+.fx-sketch-canvas { touch-action: none; cursor: crosshair; position: relative; z-index: 1; }
+.fx-sketch-prev { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: .55; pointer-events: none; }
+.fx-sketch-empty { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--ink-3); font-size: 0.9rem; pointer-events: none; }
+.fx-last-work { margin: 0; gap: 8px; }
+.fx-last-work img { align-self: flex-start; width: auto; max-width: 70%; max-height: 160px; object-fit: contain; border-radius: var(--radius-ctl); border: 1px solid var(--glass-border); background: var(--glass-solid); }
+.fx-constraints { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
+.fx-constraints li { font-size: 0.82rem; font-weight: 600; padding: 6px 12px; border-radius: var(--radius-pill); border: 1px solid var(--glass-border); background: var(--glass-inner); color: var(--ink-2); }
+
+/* ---------- reading ---------- */
+.fx-readbar {
+  position: sticky; top: calc(52px + env(safe-area-inset-top)); z-index: 5; height: 4px; margin: -8px -20px 0;
+  background: var(--glass-strong); -webkit-backdrop-filter: blur(var(--glass-blur)); backdrop-filter: blur(var(--glass-blur));
+}
+.fx-readbar i { display: block; height: 100%; background: var(--accent); transform-origin: left center; transition: transform .1s linear; }
+.fx-reading-panel { gap: 20px; }
+.fx-reading-meta { gap: 10px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.fx-article { display: flex; flex-direction: column; gap: 26px; }
+.fx-article-section { display: flex; flex-direction: column; gap: 10px; }
+.fx-article-h { padding-top: 6px; }
+.fx-article-text { font-size: 1.08rem; line-height: 1.72; }
+.fx-article-text p { margin: 0 0 1em; }
+.fx-article-text p:last-child { margin-bottom: 0; }
+.fx-article-text.lede > p:first-child { font-size: 1.2rem; line-height: 1.6; color: var(--ink); }
+.fx-article-text.lede > p:first-child::first-letter {
+  font-family: var(--font-display); font-weight: var(--display-weight); font-style: var(--display-style);
+  float: left; font-size: 3.3em; line-height: .86; margin: .06em .1em 0 0; color: var(--accent-text);
+}
+.fx-sources { display: flex; flex-direction: column; gap: 10px; padding-top: 18px; border-top: 1px solid var(--line); }
+.fx-sources h2, .fx-sources p { margin: 0; }
+.fx-source-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.fx-source { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 10px 0; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--ink); font-weight: 550; }
+.fx-source-list li:last-child .fx-source { border-bottom: 0; }
+.fx-source svg { color: var(--ink-3); flex-shrink: 0; }
+.fx-source[aria-disabled='true'] { color: var(--ink-3); }
+
+/* ---------- quiz ---------- */
+.fx-quiz-panel { gap: 14px; }
+.fx-quiz-q { margin: 4px 0 0; }
+.fx-quiz-q:focus, .fx-result h2:focus { outline: none; }
+.fx-quiz-options { display: flex; flex-direction: column; gap: 10px; }
+.fx-answer {
+  display: flex; align-items: center; gap: 14px; width: 100%; min-height: 56px; padding: 12px 16px; text-align: left;
+  border-radius: var(--radius-ctl); border: 1px solid var(--glass-border); background: var(--glass-inner); color: var(--ink); font-weight: 550;
+  box-shadow: inset 0 1px 0 var(--glass-edge); transition: border-color .15s, background .15s;
+}
+.fx-answer[aria-disabled='true'] { cursor: default; }
+.fx-answer-key { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; background: color-mix(in srgb, var(--ink) 9%, transparent); color: var(--ink-2); font-size: 0.8rem; font-weight: 700; }
+.fx-answer.picked { border-color: var(--ink-3); background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-strong); }
+.fx-answer.picked .fx-answer-key { background: var(--ink); color: var(--bg); }
+.fx-answer.right { border-color: var(--success); background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--success) 14%, var(--glass-inner)); }
+.fx-answer.right .fx-answer-key { background: var(--success); color: var(--bg); }
+.fx-answer.wrong { border-color: var(--danger); background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--danger) 12%, var(--glass-inner)); }
+.fx-answer.wrong .fx-answer-key { background: var(--danger); color: var(--bg); }
+.fx-feedback-wrap:empty { display: none; }
+.fx-feedback { padding: 14px 16px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); border-left: 3px solid var(--ink-3); animation: rise .3s ease both; }
+.fx-feedback.ok { border-left-color: var(--success); }
+.fx-feedback.no { border-left-color: var(--danger); }
+.fx-feedback.poll { border-left-color: var(--accent); }
+.fx-feedback p { margin: 8px 0 0; }
+.fx-feedback-title { display: block; }
+.fx-review { list-style: none; margin: 0; padding-block: 4px; gap: 0; }
+.fx-review-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.fx-review-item:last-child { border-bottom: 0; }
+.fx-review-item p { margin: 0 0 4px; }
+.fx-review-q { font-weight: 600; }
+
+/* ---------- writing ---------- */
+.fx-hints { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; margin-top: 4px; }
+.fx-hint { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 10px 12px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); color: var(--ink-2); }
+.fx-hint svg { flex-shrink: 0; margin-top: 2px; color: var(--accent-text); }
+.fx-writing-panel { gap: 14px; }
+/* The writing area is text-dense: it keeps strong frost even inside its panel. */
+.fx-panel .fx-writing-area { min-height: 260px; font-size: 1.05rem; line-height: 1.65; background: var(--glass-strong); }
+.fx-wordcount { display: flex; flex-direction: column; gap: 6px; }
+
+/* ---------- coding ---------- */
+.fx-editor { gap: 14px; }
+.fx-panel .fx-code {
+  font-family: var(--font-mono); font-size: 0.88rem; line-height: 1.6; tab-size: 2; white-space: pre; overflow-x: auto;
+  background: var(--glass-strong); min-height: 200px;
+}
+.fx-console { gap: 8px; padding: 14px 16px; }
+.fx-console-head { gap: 8px; }
+.fx-console-empty { margin: 0; }
+.fx-console-out { margin: 0; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow: auto; color: var(--ink); }
+.fx-console-result { margin: 0; word-break: break-word; }
+.fx-checks { gap: 8px; }
+.fx-checks h3 { margin: 0; }
+.fx-checks ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.fx-check { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); font-size: 0.92rem; }
+.fx-check .fx-mark { width: 22px; height: 22px; }
+.fx-check.ok .fx-mark { background: var(--success); border-color: var(--success); color: var(--bg); }
+.fx-check.no .fx-mark { background: color-mix(in srgb, var(--danger) 16%, var(--glass-inner)); color: var(--danger); }
+
+/* ---------- debate ---------- */
+.fx-before-note.fx-panel { padding: 12px 16px; }
+.fx-sides h2:focus, .fx-debate h2:focus { outline: none; }
+.fx-cards {
+  display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  margin: 0 -18px; padding: 4px 18px 8px; scroll-padding-inline: 18px; overscroll-behavior-x: contain;
+}
+@media (min-width: 640px) { .fx-cards { margin: 0 -22px; padding-inline: 22px; scroll-padding-inline: 22px; } }
+.fx-cards::-webkit-scrollbar { display: none; }
+.fx-cards:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.fx-side { flex: 0 0 86%; scroll-snap-align: center; display: flex; flex-direction: column; gap: 8px; min-height: 220px; transition: border-color .2s; }
+@media (min-width: 640px) { .fx-side { flex-basis: 70%; } }
+.fx-panel .fx-side.on { border-color: color-mix(in srgb, var(--accent) 55%, var(--glass-border)); }
+.fx-side h3 { margin: 0; }
+.fx-side-arg { margin: 0; line-height: 1.6; color: var(--ink-2); }
+.fx-dots { display: flex; gap: 6px; align-items: center; }
+.fx-dotnav { width: 8px; height: 8px; border-radius: 50%; background: color-mix(in srgb, var(--ink) 18%, transparent); transition: width .2s, background .2s; }
+.fx-dotnav.seen { background: var(--ink-3); }
+.fx-dotnav.on { background: var(--accent); width: 20px; border-radius: 4px; }
+.fx-sides > p { margin: 0; }
+.fx-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0; }
+.fx-compare > div { padding: 12px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); }
+.fx-compare-v { font-weight: 650; margin: 4px 0 !important; }
+
+/* ---------- games ---------- */
+.fx-board { gap: 14px; }
+.fx-pads { display: grid; gap: 10px; max-width: 420px; width: 100%; margin: 0 auto; }
+.fx-pad {
+  aspect-ratio: 1; border-radius: var(--radius-card); border: 1px solid var(--glass-border); color: var(--ink-3);
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 55%), var(--glass-inner);
+  display: grid; place-items: center; transition: background .12s, transform .12s, box-shadow .12s; min-height: 64px;
+}
+.fx-pad:active { transform: scale(.97); }
+.fx-pad.lit {
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--accent); border-color: var(--accent); color: var(--accent-ink);
+  box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo), 0 0 26px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.fx-pad[aria-disabled='true'] { cursor: default; }
+.fx-pad-n { font-family: var(--font-mono); font-weight: 700; font-size: 1rem; }
+.fx-game-status { margin: 0; min-height: 1.5em; text-align: center; color: var(--ink-2); }
+.fx-tap-wrap { display: grid; place-items: center; padding: 10px 0; }
+.fx-tap {
+  position: relative; width: min(220px, 62vw); aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--accent); color: var(--accent-text);
+  background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--accent) 16%, var(--glass-inner));
+  box-shadow: inset 0 2px 2px var(--liquid-hi), inset 0 -2px 4px var(--liquid-lo), 0 10px 28px color-mix(in srgb, var(--accent) 24%, transparent);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.fx-tap:disabled { opacity: .75; border-color: var(--glass-border); color: var(--ink-2); background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), var(--glass-inner); box-shadow: inset 0 1px 1px var(--liquid-hi), inset 0 -1px 2px var(--liquid-lo); }
+.fx-tap:active:not(:disabled) { background: var(--accent); color: var(--accent-ink); }
+.fx-tap-pulse { position: absolute; inset: -2px; border-radius: 50%; border: 2px solid var(--accent); animation: fx-pulse .45s ease-out both; pointer-events: none; }
+@keyframes fx-pulse { from { transform: scale(1); opacity: .9; } to { transform: scale(1.18); opacity: 0; } }
+.fx-offsets { width: 100%; max-width: 420px; height: auto; }
+.fx-offsets .axis { stroke: var(--line); stroke-width: 2; }
+.fx-offsets .beatline { stroke: var(--ink-3); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.fx-offsets .tapdot { fill: var(--accent); opacity: .8; }
+.fx-offsets .lbl { fill: var(--ink-2); font-size: 9px; font-family: var(--font-body); }
+.fx-est-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.fx-est { display: flex; flex-direction: column; gap: 10px; }
+.fx-est-q { font-weight: 600; line-height: 1.45; }
+.fx-est .input { max-width: 180px; }
+.fx-est .row { flex-wrap: wrap; }
+.fx-est .row .btn { white-space: nowrap; }
+.fx-est-ans { padding: 12px 14px; border-radius: var(--radius-ctl); background: var(--glass-inner); border: 1px solid var(--glass-border); border-left: 3px solid var(--ink-3); }
+.fx-est-ans.ok { border-left-color: var(--success); }
+.fx-est-ans.no { border-left-color: var(--warning); }
+.fx-est-ans p { margin: 0 0 4px; }
+.fx-est-ans p:last-child { margin: 0; }
+.fx-est-sum.fx-panel { padding: 12px 16px; }
+
+/* ---------- simulations ---------- */
+/* The canvas sits in a glass-strong frame and is drawn opaque with --glass-solid, so it reads over any artwork. */
+.fx-sim-stage { padding: 10px; gap: 0; }
+.fx-sim-head { padding: 4px 4px 10px; }
+.fx-canvas-wrap { width: 100%; border-radius: calc(var(--radius-card) - 8px); overflow: hidden; background: var(--glass-solid); border: 1px solid var(--glass-border); }
+.fx-canvas { display: block; }
+.fx-canvas.touch { touch-action: none; cursor: pointer; }
+.fx-readout { margin: 10px 4px 0; color: var(--ink-2); min-height: 1.4em; }
+.fx-sim-help { margin: 8px 4px 2px; }
+.fx-legend { list-style: none; margin: 8px 4px 2px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.78rem; color: var(--ink-2); }
+.fx-legend li { display: flex; align-items: center; gap: 6px; }
+.fx-key { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid var(--line); }
+.fx-key.ink { background: var(--ink); border-color: var(--ink); }
+.fx-key.ink2 { background: var(--ink-2); border-color: var(--ink-2); border-radius: 50%; }
+.fx-key.accent { background: var(--accent); border-color: var(--accent); }
+.fx-key.surface { background: var(--glass-solid); border-color: var(--ink-3); }
+.fx-key.hollow { background: var(--glass-solid); border: 1.5px solid var(--ink-3); border-radius: 50%; }
+.fx-sim-panel { gap: 14px; }
+.fx-sim-controls { gap: 8px; }
+.fx-sim-panel .fx-sliders { padding-top: 14px; border-top: 1px solid var(--line); }
+.fx-notice li { line-height: 1.5; color: var(--ink-2); }
+
+/* ---------- listening ---------- */
+.fx-listen-panel > .fx-block + .fx-block { padding-top: 14px; border-top: 1px solid var(--line); }
+.fx-prompts ol { counter-reset: none; }
+.fx-prompts li { line-height: 1.5; }
+.fx-tone-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.fx-tone {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-height: 64px; padding: 12px; text-align: left;
+  border-radius: var(--radius-ctl); border: 1px solid var(--glass-border); background: var(--glass-inner); color: var(--ink);
+  box-shadow: inset 0 1px 0 var(--glass-edge); transition: background .15s, border-color .15s;
+}
+.fx-tone.on { border-color: var(--accent); background: linear-gradient(180deg, var(--glass-sheen), transparent 60%), color-mix(in srgb, var(--accent) 16%, var(--glass-inner)); }
+.fx-layers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.fx-layer { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: var(--radius-ctl); border: 1px solid var(--glass-border); background: var(--glass-inner); box-shadow: inset 0 1px 0 var(--glass-edge); }
+.fx-layer.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--glass-inner)); }
+.fx-beatrow { display: grid; gap: 4px; }
+.fx-beat { height: 10px; border-radius: 3px; background: color-mix(in srgb, var(--ink) 10%, transparent); transition: background .08s; }
+.fx-beat.down { height: 14px; }
+.fx-beat.hit { background: color-mix(in srgb, var(--ink) 30%, transparent); }
+.fx-beat.now { background: var(--accent); }
+.fx-pair { display: flex; flex-direction: column; gap: 10px; }
+.fx-pair-q { border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fx-pair-q legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
+.fx-pair-q:disabled { opacity: .55; }
+.fx-reveal { padding: 12px 14px; border-radius: var(--radius-ctl); background: var(--accent-soft); }
+.fx-reveal p { margin: 0 0 6px; }
+.fx-reveal p:last-child { margin: 0; }
+.fx-soundlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.fx-soundlist li { display: flex; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--line); }
+.fx-soundlist li:last-child { border-bottom: 0; }
+
+@media (min-width: 900px) {
+  .fx-readbar { top: 52px; }
+}
+
+/* Reduced transparency: glass.css's `html[data-transparency='reduce']` token override is less specific than the night
+   theme blocks (`html[data-theme][data-mode='dark']`), so at night panels stayed translucent with the blur switched
+   off. Re-assert the opaque tokens on the experience view itself (a variable set here beats the inherited one).
+   Redundant, but harmless, once the shared selector is fixed. */
+html[data-transparency='reduce'] .fx-view {
+  --glass-fill: var(--glass-solid); --glass-strong: var(--glass-solid); --glass-inner: var(--glass-solid); --surface: var(--glass-solid); --surface-2: var(--glass-solid);
+}
+@media (prefers-reduced-transparency: reduce) {
+  .fx-view { --glass-fill: var(--glass-solid); --glass-strong: var(--glass-solid); --glass-inner: var(--glass-solid); --surface: var(--glass-solid); --surface-2: var(--glass-solid); }
+  .fx-readbar { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+.fx-view .icon-btn:disabled, .fx-player .icon-btn:disabled { opacity: .35; cursor: default; }
