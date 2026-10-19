@@ -1,96 +1,45 @@
-# Elsewhere app map
+# Every page, and what you can do on it
 
-Every page in the Elsewhere app and what you can do on it: 40 pages across 4 tabs, 10 setup and shared pieces, and 10 format players, 317 tasks in all. The labels are the real button names from the code.
+**Elsewhere · app map**
 
-**Interactive version:** https://claude.ai/artifact/2XnoyVdYntcen4tANvff4p (tap a page on the map to jump to its tasks, or filter by a word).
+The map shows the four tabs, the pieces shared by every screen, and the format players inside experiences. Each gesture is listed with its button or keyboard alternative.
 
-## Mind map
+`40 pages across 4 tabs · 10 setup & shared pieces · 10 format players · 339 tasks`
 
-Each branch is a tab or group; each leaf is a page with its number of tasks.
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/legend-dark.png">
+  <img alt="Branches: Discover 6, Journeys 12, Create 9, You 13, Format players 10, Setup &amp; shared 10" src="app-map/legend-light.png">
+</picture>
 
-```mermaid
-mindmap
-  root((Elsewhere))
-    Discover · 6
-      Discover · 23
-      Saved · 4
-      Search · 6
-      Topic page · 4
-      Plot Twist · 15
-      Experience view · 10
-    Journeys · 12
-      Journeys · 7
-      Rabbit Hole · 10
-      Skill Arcade · 3
-      Skill detail · 8
-      Return Tickets · 6
-      Two-Person Quests · 6
-      Quest detail · 8
-      Collections · 3
-      Collection detail · 4
-      Perspective Switch · 3
-      Perspective session · 7
-      Import a share code · 4
-    Create · 9
-      Create · 7
-      Field Notes · 5
-      Note editor · 8
-      Remix Studio · 5
-      Your creations · 5
-      Builder editor · 9
-      Capsules · 3
-      New capsule · 5
-      Capsule view · 6
-    You · 13
-      You · 5
-      Version History · 7
-      Entry editor · 8
-      Curiosity Map · 5
-      Progress · 5
-      Settings · 2
-      Appearance · 5
-      Profile and preferences · 5
-      Notifications and reminders · 5
-      Privacy · 3
-      Your data · 7
-      About Elsewhere · 1
-      Install guide · 3
-    Format players · 10
-      Reading · 4
-      Quiz · 4
-      Steps · 3
-      Writing · 4
-      Sketch · 3
-      Listening · 6
-      Simulation · 4
-      Game · 4
-      Coding · 4
-      Debate · 4
-    Setup and shared · 10
-      Onboarding · 8
-      Not found · 1
-      Tab bar and header · 4
-      Sheets and dialogs · 3
-      Toasts · 2
-      Timers · 3
-      Return-ticket sheet · 4
-      Add to collection sheet · 2
-      Connect to… picker · 3
-      Surprise Dial · 2
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/map-dark.png">
+  <img alt="Mind map: Elsewhere at the centre, branching into Discover (6), Journeys (12), Create (9), You (13), Format players (10), Setup &amp; shared (10); each leaf is a page with its number of tasks." src="app-map/map-light.png">
+</picture>
+
+Elsewhere at the centre; each branch is a tab or group, and each leaf is a page with its number of tasks.
+
+Interactive version, with tap-to-jump and a filter: https://claude.ai/artifact/2XnoyVdYntcen4tANvff4p
 
 ## Contents
 
-- [Discover](#discover) · 6 pages
-- [Journeys](#journeys) · 12 pages
-- [Create](#create) · 9 pages
-- [You](#you) · 13 pages
-- [Format players](#format-players) · 10 players
-- [Setup & shared](#setup-and-shared) · 10 pieces
+- [Discover](#discover) · 6 pages · 63 tasks
+- [Journeys](#journeys) · 12 pages · 72 tasks
+- [Create](#create) · 9 pages · 60 tasks
+- [You](#you) · 13 pages · 65 tasks
+- [Format players](#format-players) · 10 players · 45 tasks
+- [Setup and shared](#setup-and-shared) · 10 pieces · 34 tasks
 
 ## Discover
 
-Find something to try: the feeds, search, topics, Plot Twist and the experience player. 6 pages, 62 tasks.
+Find something to try: the feeds, search, topics, Plot Twist and the experience player. *6 pages · 63 tasks*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/discover-dark.png">
+  <img alt="Discover cards: Discover (23 tasks), Saved (4 tasks), Search (6 tasks), Topic page (5 tasks), Plot Twist (15 tasks), Experience view (10 tasks)" src="app-map/discover-light.png">
+</picture>
+
+<details>
+<summary>Discover as text</summary>
 
 <a id="p-discover"></a>
 
@@ -142,11 +91,11 @@ Leads to: [Experience view](#p-x), [Search](#p-search), [Topic page](#p-topic), 
 
 ### Search
 
-`/search?q=` · 6 tasks · Search across everything, on this device.
+`/search?q=` · 6 tasks · Search experiences, topics, rabbit holes, skills, perspective questions and your own notes and entries, on this device.
 
 - Type a query; Clear search
 - Filter: ≤ 15 min, ≤ 30 min, Low energy, Medium or less, formats
-- Rerun or remove a recent search; Clear all
+- Rerun or remove a recent search; Clear the list
 - Browse topics chips
 - Results: topics, experiences, rabbit holes and ideas, skills, perspectives, your notes and entries
 - No results: Clear filters, or Surprise me instead
@@ -155,12 +104,15 @@ Leads to: [Experience view](#p-x), [Search](#p-search), [Topic page](#p-topic), 
 
 ### Topic page
 
-`/topic/<id>` · 4 tasks · One topic’s content, plus feedback on it.
+`/topic/<id>` · 5 tasks · One topic’s content, plus feedback on it.
 
 - Follow topic / Following
 - More like this / Less, with Undo
 - Open its rabbit holes, skills and perspectives
 - Save experience cards
+- Open an experience card
+
+Leads to: [Experience view](#p-x)
 
 <a id="p-twist"></a>
 
@@ -206,9 +158,19 @@ Leads to: [Note editor](#p-note), [Two-Person Quests](#p-quests), [Entry editor]
 
 Leads to: [Entry editor](#p-entry), [Note editor](#p-note), [Remix Studio](#p-remix), [New capsule](#p-capsulenew), [Builder editor](#p-builderedit), [Skill detail](#p-skill), [Return Tickets](#p-tickets)
 
+</details>
+
 ## Journeys
 
-Things that unfold over time: rabbit holes, skills, tickets, quests, collections and perspectives. 12 pages, 69 tasks.
+Things that unfold over time: rabbit holes, skills, tickets, quests, collections and perspectives. *12 pages · 72 tasks*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/journeys-dark.png">
+  <img alt="Journeys cards: Journeys (7 tasks), Rabbit Hole (10 tasks), Skill Arcade (3 tasks), Skill detail (8 tasks), Return Tickets (6 tasks), Two-Person Quests (7 tasks), Quest detail (9 tasks), Collections (3 tasks), Collection detail (4 tasks), Perspective Switch (3 tasks), Perspective session (8 tasks), Import a share code (4 tasks)" src="app-map/journeys-light.png">
+</picture>
+
+<details>
+<summary>Journeys as text</summary>
 
 <a id="p-journeys"></a>
 
@@ -289,20 +251,21 @@ Leads to: [Experience view](#p-x), [Remix Studio](#p-remix)
 
 ### Two-Person Quests
 
-`/quests  (?template=<id>)` · 6 tasks · Shared challenges, passed back and forth by code.
+`/quests  (?template=<id>)` · 7 tasks · Shared challenges, passed back and forth by code.
 
-- Open your quests (Waiting shows whose move it is)
+- Open your quests; the status line shows whose move it is (Your turn to answer, Awaiting their reply)
 - Start a quest from a template
 - Write a quest: title, intro, kind, prompts
 - Reorder, add or remove prompts
 - Discard, or Create quest
 - Import a code
+- Set each prompt's answer type: Written, Choice or Task
 
 <a id="p-quest"></a>
 
 ### Quest detail
 
-`/quest/<id>` · 8 tasks · Answer, invite and compare.
+`/quest/<id>` · 9 tasks · Answer, invite and compare.
 
 - Answer each prompt (autosaved)
 - Edit prompts, or Delete quest
@@ -312,6 +275,7 @@ Leads to: [Experience view](#p-x), [Remix Studio](#p-remix)
 - Compare answers side by side
 - Capture what you noticed
 - Import a reply code
+- Add your name, shown to the other person with your answers
 
 Leads to: [Note editor](#p-note), [Import a share code](#p-import)
 
@@ -350,7 +314,7 @@ Leads to: [Note editor](#p-note), [Import a share code](#p-import)
 
 ### Perspective session
 
-`/perspective/<questionId>  (?session=)` · 7 tasks · Your stance before, the lenses, your stance after.
+`/perspective/<questionId>  (?session=)` · 8 tasks · Your stance before, the lenses, your stance after.
 
 - Set your stance and say why
 - Read each lens and write a response
@@ -359,6 +323,7 @@ Leads to: [Note editor](#p-note), [Import a share code](#p-import)
 - Record in Version History
 - Add to “Ideas I changed my mind about”
 - Start again; see earlier sessions
+- Tap Finish to save the session and see your stance before and after
 
 Leads to: [Entry editor](#p-entry), [Collection detail](#p-collection)
 
@@ -375,15 +340,25 @@ Leads to: [Entry editor](#p-entry), [Collection detail](#p-collection)
 
 Leads to: [Experience view](#p-x), [Quest detail](#p-quest)
 
+</details>
+
 ## Create
 
-Capture, remix, build and seal. 9 pages, 53 tasks.
+Capture, remix, build and seal. *9 pages · 60 tasks*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/create-dark.png">
+  <img alt="Create cards: Create (9 tasks), Field Notes (5 tasks), Note editor (8 tasks), Remix Studio (7 tasks), Your creations (5 tasks), Builder editor (11 tasks), Capsules (3 tasks), New capsule (6 tasks), Capsule view (6 tasks)" src="app-map/create-light.png">
+</picture>
+
+<details>
+<summary>Create as text</summary>
 
 <a id="p-create"></a>
 
 ### Create
 
-`/create` · 7 tasks · The hub for making things.
+`/create` · 9 tasks · The hub for making things.
 
 - Quick capture: Text, Voice, Sketch, Photo, Link
 - Open a capsule that’s ready
@@ -392,6 +367,8 @@ Capture, remix, build and seal. 9 pages, 53 tasks.
 - Start a remix
 - New experience; Your creations
 - Quick capsules: Prediction, Message, Voice
+- Open All capsules
+- Open a recent creation to edit it
 
 Leads to: [Note editor](#p-note), [Field Notes](#p-notes), [Remix Studio](#p-remix), [Your creations](#p-builder), [Builder editor](#p-builderedit), [Capsules](#p-capsules), [New capsule](#p-capsulenew)
 
@@ -417,7 +394,7 @@ Leads to: [Note editor](#p-note), [Remix Studio](#p-remix)
 
 - Write a title and the note
 - Voice: Record, Stop, Record again, play it back
-- Sketch on the canvas
+- Sketch: pick Ink pen, Accent pen or Eraser and a size (Fine, Medium, Bold); Undo last stroke, Clear sketch, Save sketch
 - Photo: Take photo, Choose image, Retake, Remove
 - Link: web address, Open link
 - Topics, Connected to, Private
@@ -430,13 +407,15 @@ Leads to: [Remix Studio](#p-remix)
 
 ### Remix Studio
 
-`/remix  (?from=<kind>:<id>)` · 5 tasks · Turn one thing into a new experience, from templates.
+`/remix  (?from=<kind>:<id>)` · 7 tasks · Turn one thing into a new experience, from templates.
 
 - Start from: search, or pick a recent source
 - Turn it into: experiment, quiz, challenge, story, letter, debate, project, outdoor walk, writing prompt or two-person quest
 - Preview it; Another phrasing
 - Edit in Builder, or Start now
-- Letter: seal it straight into a capsule
+- Letter: Or write it straight into a sealed capsule
+- Filter sources: All, Recently completed, Field notes, Version History, Rabbit holes, Skills, Plot twists
+- Choose something else to change the source
 
 Leads to: [Builder editor](#p-builderedit), [Experience view](#p-x), [New capsule](#p-capsulenew)
 
@@ -444,7 +423,7 @@ Leads to: [Builder editor](#p-builderedit), [Experience view](#p-x), [New capsul
 
 ### Your creations
 
-`/builder` · 5 tasks · The library of experiences you made.
+`/builder` · 5 tasks · Your library of experiences: made by you, remixed, or shared with you.
 
 - New experience; Remix something
 - Open or discard a draft
@@ -456,7 +435,7 @@ Leads to: [Builder editor](#p-builderedit), [Experience view](#p-x), [New capsul
 
 ### Builder editor
 
-`/builder/new  ·  /builder/<id>` · 9 tasks · Create or edit an experience.
+`/builder/new  ·  /builder/<id>` · 11 tasks · Create or edit an experience.
 
 - Pick a type: quest, quiz or poll, experiment, learning journey, writing prompt, reflection, more formats
 - Basics: title, summary, topics
@@ -467,6 +446,8 @@ Leads to: [Builder editor](#p-builderedit), [Experience view](#p-x), [New capsul
 - Details: minutes, who, energy, comfort zone, cost, follow-ups
 - Private, or For friends → Create share code
 - Save, Preview, Delete, Discard draft
+- Turn on a Whole-experience timer and set Timer minutes
+- Add step or Add question; move one up or down, or remove it
 
 Leads to: [Experience view](#p-x), [Import a share code](#p-import)
 
@@ -484,13 +465,14 @@ Leads to: [Experience view](#p-x), [Import a share code](#p-import)
 
 ### New capsule
 
-`/capsule/new  (?kind=&link=)` · 5 tasks · Compose it, pick when it opens, seal it.
+`/capsule/new  (?kind=&link=)` · 6 tasks · Compose it, pick when it opens, seal it.
 
 - Pick a kind; a title shown while sealed
 - Write it, record up to 5 minutes, or connect a creation
 - Opens: 1 week, 1 month, 3 months, 1 year, or a date
 - Seal capsule (with a confirm step)
 - Discard draft
+- Connect it to something (Connected to, optional)
 
 <a id="p-capsule"></a>
 
@@ -502,14 +484,24 @@ Leads to: [Experience view](#p-x), [Import a share code](#p-import)
 - Ready: Open capsule
 - Then: read it, play the voice note, see what it was sealed with
 - Now: What do I think now? (autosaved)
-- My view has changed → add to Version History
+- Add to Version History (turn on My view has changed to log it as a change of mind), then View the entry
 - Delete capsule
 
 Leads to: [Entry editor](#p-entry)
 
+</details>
+
 ## You
 
-Your timeline, your map, your progress and your settings. 13 pages, 61 tasks.
+Your timeline, your map, your progress and your settings. *13 pages · 65 tasks*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/you-dark.png">
+  <img alt="You cards: You (5 tasks), Version History (8 tasks), Entry editor (9 tasks), Curiosity Map (5 tasks), Progress (6 tasks), Settings (2 tasks), Appearance (5 tasks), Profile &amp; preferences (5 tasks), Notifications &amp; reminders (6 tasks), Privacy (3 tasks), Your data (7 tasks), About Elsewhere (1 task), Install guide (3 tasks)" src="app-map/you-light.png">
+</picture>
+
+<details>
+<summary>You as text</summary>
 
 <a id="p-you"></a>
 
@@ -529,7 +521,7 @@ Leads to: [Version History](#p-history), [Entry editor](#p-entry), [Curiosity Ma
 
 ### Version History
 
-`/history` · 7 tasks · Your timeline of entries and activities.
+`/history` · 8 tasks · Your timeline of entries and activities.
 
 - Add an entry
 - Revisit: Show another past entry, Has this changed?, Read it again
@@ -538,6 +530,7 @@ Leads to: [Version History](#p-history), [Entry editor](#p-entry), [Curiosity Ma
 - Filter by kind: reflections, opinions, goals, mind changes…
 - Tap to reveal private items
 - Patterns as literal counts, after 3 or more entries
+- Open any item on the timeline
 
 Leads to: [Entry editor](#p-entry), [New capsule](#p-capsulenew)
 
@@ -545,7 +538,7 @@ Leads to: [Entry editor](#p-entry), [New capsule](#p-capsulenew)
 
 ### Entry editor
 
-`/entry/new  (?kind=&link=&title=)  ·  /entry/<id>` · 8 tasks · Saves as you type.
+`/entry/new  (?kind=&link=&title=)  ·  /entry/<id>  (?revise=1)` · 9 tasks · Saves as you type.
 
 - Pick a kind
 - Write a title and your words
@@ -555,6 +548,7 @@ Leads to: [Entry editor](#p-entry), [New capsule](#p-capsulenew)
 - Compare the earliest and current versions
 - Seal a follow-up capsule; Add to collection
 - Delete, or Done
+- See what links here under Connections
 
 Leads to: [New capsule](#p-capsulenew)
 
@@ -574,13 +568,14 @@ Leads to: [New capsule](#p-capsulenew)
 
 ### Progress
 
-`/progress` · 5 tasks · Literal counts. No streaks.
+`/progress` · 6 tasks · Literal counts. No streaks.
 
 - Continue or open a skill
 - Rabbit holes explored
 - Completed, by format
 - Counts link to twists, perspectives, quests, capsules, history
 - Recent saved work
+- Open All skills
 
 Leads to: [Skill detail](#p-skill), [Rabbit Hole](#p-rabbit), [Plot Twist](#p-twist), [Perspective Switch](#p-perspectives), [Two-Person Quests](#p-quests), [Capsules](#p-capsules), [Version History](#p-history)
 
@@ -623,13 +618,14 @@ Leads to: [Appearance](#p-sappearance), [Profile & preferences](#p-sprofile), [N
 
 ### Notifications & reminders
 
-`/settings/notifications` · 5 tasks · What can notify you, and when.
+`/settings/notifications` · 6 tasks · What can notify you, and when.
 
 - Allow notifications
 - Toggle categories: timers, reminders, capsules, shared updates, return tickets
 - Quiet hours: from and until
 - Create or edit a reminder: what, time, days; switch it on or off
 - Send a test notification, or Test in 10 seconds
+- Delete a reminder
 
 <a id="p-sprivacy"></a>
 
@@ -677,9 +673,19 @@ Leads to: [Import a share code](#p-import)
 
 Leads to: [Your data](#p-sdata)
 
+</details>
+
 ## Format players
 
-What you do inside an experience at /x/&lt;id&gt;, by format. Experiments, projects, challenges, outdoor walks, reflections, together activities and journeys all use the Steps player. 10 players, 40 tasks.
+What you do inside an experience at /x/&lt;id&gt;, by format. Experiments, projects, challenges, outdoor walks, reflections, together activities and journeys all use the Steps player. *10 players · 45 tasks*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/players-dark.png">
+  <img alt="Format players cards: Reading (4 tasks), Quiz (4 tasks), Steps (3 tasks), Writing (4 tasks), Sketch (3 tasks), Listening (6 tasks), Simulation (6 tasks), Game (6 tasks), Coding (4 tasks), Debate (5 tasks)" src="app-map/players-light.png">
+</picture>
+
+<details>
+<summary>Format players as text</summary>
 
 <a id="p-reading"></a>
 
@@ -738,7 +744,7 @@ What you do inside an experience at /x/&lt;id&gt;, by format. Experiments, proje
 
 ### Listening
 
-`inside /x/<id>` · 6 tasks · Sounds made in the app, plus a silence walk.
+`inside /x/<id>` · 6 tasks · Sounds made in the app, plus timed listening wherever you are.
 
 - Tones: presets, a free tone with pitch and wave shape, volume
 - Soundscape: layers with levels; Stop all
@@ -751,23 +757,27 @@ What you do inside an experience at /x/&lt;id&gt;, by format. Experiments, proje
 
 ### Simulation
 
-`inside /x/<id>` · 4 tasks · Random walk, Life, flocking, waves, spread, sound and mood.
+`inside /x/<id>` · 6 tasks · Random walk, Life, flocking, waves, spread, sound and mood.
 
 - Play, Pause, Step, Reset
 - Change each model with its sliders
 - **Gesture:** Tap or drag cells and people on the canvas · *or* Randomise, Add a glider, Start from someone random
 - Write what you observed; Finish & save
+- Sound and mood: Start sound, Stop
+- Clear the Life grid, or make a New network
 
 <a id="p-game"></a>
 
 ### Game
 
-`inside /x/<id>` · 4 tasks · Pattern memory, rhythm tap and estimation.
+`inside /x/<id>` · 6 tasks · Pattern memory, rhythm tap and estimation.
 
 - Pattern memory: tap the pads, or number keys
 - Rhythm tap: tap the big button, or Space / Enter
 - Estimate: guess, Reveal, Finish
-- Save your best run
+- Save best & finish, or Save this run
+- Turn pad Tones on or off
+- Estimate: Start over to clear your guesses
 
 <a id="p-coding"></a>
 
@@ -784,18 +794,29 @@ What you do inside an experience at /x/&lt;id&gt;, by format. Experiments, proje
 
 ### Debate
 
-`inside /x/<id>` · 4 tasks · Pick a side, read the others, see if you moved.
+`inside /x/<id>` · 5 tasks · Pick a side, read the others, see if you moved.
 
 - Pick a position and say why; Lock it in
 - **Gesture:** Swipe between the sides · *or* Previous / Next side, ← → keys
 - Where do I stand now?; Save both positions
 - Record this change of mind
+- Revisit the sides and answer again
 
 Leads to: [Entry editor](#p-entry)
 
+</details>
+
 ## Setup and shared
 
-First launch, plus the pieces that appear on many screens. 10 pieces, 32 tasks.
+First launch, plus the pieces that appear on many screens. *10 pieces · 34 tasks*
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="app-map/global-dark.png">
+  <img alt="Setup &amp; shared cards: Onboarding (8 tasks), Not found (1 task), Tab bar &amp; header (5 tasks), Sheets &amp; dialogs (3 tasks), Toasts (2 tasks), Timers (3 tasks), Return-ticket sheet (4 tasks), Add to collection sheet (2 tasks), Connect to… picker (4 tasks), Surprise Dial (2 tasks)" src="app-map/global-light.png">
+</picture>
+
+<details>
+<summary>Setup and shared as text</summary>
 
 <a id="p-onboarding"></a>
 
@@ -824,12 +845,13 @@ First launch, plus the pieces that appear on many screens. 10 pieces, 32 tasks.
 
 ### Tab bar & header
 
-`every screen` · 4 tasks · Navigation that’s always there.
+`every screen` · 5 tasks · Navigation that’s always there.
 
 - Switch tabs: Discover, Journeys, Create, You
 - Go back with the header chevron
 - **Gesture:** Swipe in from the left edge to go back · *or* Back button
 - See the offline and storage banners
+- Press Android's back button to go back (on a main tab, it minimizes the app)
 
 <a id="p-sheets"></a>
 
@@ -864,7 +886,7 @@ First launch, plus the pieces that appear on many screens. 10 pieces, 32 tasks.
 
 ### Return-ticket sheet
 
-`rabbit holes, experiences, skills` · 4 tasks · Note where you stopped, for later.
+`rabbit holes, experiences, Return Tickets (edit)` · 4 tasks · Note where you stopped, for later.
 
 - Where I stopped, What caught my attention, What I want to try next
 - Remind me: None, Tomorrow, 3 days, 1 week
@@ -875,7 +897,7 @@ First launch, plus the pieces that appear on many screens. 10 pieces, 32 tasks.
 
 ### Add to collection sheet
 
-`cards, experiences, notes, entries` · 2 tasks · File anything onto a shelf.
+`cards, experiences, rabbit holes, notes, entries` · 2 tasks · File anything onto a shelf.
 
 - Tap a collection to add or remove
 - Create a new collection by name
@@ -884,11 +906,12 @@ First launch, plus the pieces that appear on many screens. 10 pieces, 32 tasks.
 
 ### Connect to… picker
 
-`notes, entries, capsules, collections` · 3 tasks · Link things to each other.
+`notes, entries, capsules, collections` · 4 tasks · Link things to each other.
 
 - Search experiences, skills, notes…
 - Toggle items, then Done
 - Remove a link with its X
+- Tap a linked item to open it
 
 <a id="p-dial"></a>
 
@@ -899,6 +922,8 @@ First launch, plus the pieces that appear on many screens. 10 pieces, 32 tasks.
 - Pick 1 to 5, Familiar → Adventurous
 - Arrow keys move the dial
 
+</details>
+
 ---
 
-Routes are hash routes, so `/rabbit/<id>` opens as `#/rabbit/<id>`. Until setup is finished, every route shows onboarding except `/import`. Sheets, toasts with Undo and timers appear on many pages, so they are listed once under Setup and shared.
+Routes are hash routes, so `/rabbit/<id>` opens as `#/rabbit/<id>`. Until setup is finished, every route shows onboarding except `/import`. Sheets, toasts with Undo and timers appear on many pages, so they’re listed once under Setup & shared. Built from the app’s source code on 20 October 2026.

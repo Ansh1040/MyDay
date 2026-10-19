@@ -21,7 +21,22 @@ Night mode darkens the artwork without hiding it. Panels switch to solid when th
 
 ## App map
 
-Every page and what you can do on it, with a mind map: [`docs/APP_MAP.md`](docs/APP_MAP.md). An interactive version is public at https://claude.ai/artifact/2XnoyVdYntcen4tANvff4p: tap a page on the map to jump to its tasks, or filter by a word.
+<!-- app-map:start -->
+
+Every page and what you can do on it: `40 pages across 4 tabs · 10 setup & shared pieces · 10 format players · 339 tasks`. Each section's cards, as on the [interactive map](https://claude.ai/artifact/2XnoyVdYntcen4tANvff4p), are in [`docs/APP_MAP.md`](docs/APP_MAP.md).
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/app-map/legend-dark.png">
+  <img alt="Branches: Discover 6, Journeys 12, Create 9, You 13, Format players 10, Setup &amp; shared 10" src="docs/app-map/legend-light.png">
+</picture>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/app-map/map-dark.png">
+  <img alt="Mind map: Elsewhere at the centre, branching into Discover (6), Journeys (12), Create (9), You (13), Format players (10), Setup &amp; shared (10); each leaf is a page with its number of tasks." src="docs/app-map/map-light.png">
+</picture>
+
+<!-- app-map:end -->
+
 
 ## Platforms
 
