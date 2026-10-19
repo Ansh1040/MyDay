@@ -19,6 +19,10 @@ A personal discovery app for exploring curiosity, breaking routines, developing 
 
 Night mode darkens the artwork without hiding it. Panels switch to solid when the device asks for reduced transparency, when backdrop blur isn't supported, or when **Settings → Appearance → Reduce transparency** is on. Design rules: [`docs/GLASS.md`](docs/GLASS.md).
 
+## App map
+
+Every page and what you can do on it, with a mind map: [`docs/APP_MAP.md`](docs/APP_MAP.md). An interactive version is public at https://claude.ai/artifact/2XnoyVdYntcen4tANvff4p: tap a page on the map to jump to its tasks, or filter by a word.
+
 ## Platforms
 
 | Platform | Status |
